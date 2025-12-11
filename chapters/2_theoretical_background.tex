@@ -1,16 +1,16 @@
 \chapter{Theoretical background}
 \label{cha:2}
-xxxx
 
 \section{Homomorphic encryption}
 
 So far, encryption technologies are shown to be effective to protect stored and in transit data. However, when data is used for computation, preserving privacy becomes more complex. To achieve this, several privacy-enhancing technologies (PETs) are available. One type of PET is homomorphic encryption (HE), which allows computation on encrypted data without decrypting. No party performing computations has access to the plaintext data, these data remains encrypted. Partially homomorphic encryption (PHE) is a type of HE that only supports homomorphic multiplication or addition, but not both. Full HE (FHE) and Somewhat HE (SHE) support both multiplications and additions, but with SHE only up to a limited computation depth. To enhance security, noise is added to the encrypted data when using HE, in the least significant bits as illustrated in figure \ref{fig:ciphertext_HE}. However, when performing computations the noise can grow beyond the noise padding bits, eventually corrupting the data in SHE. To mitigate this, bootstrapping can be performed in FHE to reduce the amount of noise, thus allowing more computations to be done whilst maintaining data integrity. 
 
-\begin{center}
+\begin{figure}
+    \centering
     \includegraphics[width=0.5\textwidth]{fig/Ciphertext_HE.png} 
     \captionof{figure}{Ciphertext HE \cite{ilaria_chillotti_zama_tfhe_2022}}
     \label{fig:ciphertext_HE}
-\end{center}
+\end{figure}
 
 FHE offers strong advantages when compared to other PETs. For instance, less communication is needed during computation when compared to MPC (multi-party computation) and it has a better track record in terms of security vulnerability when compared to TEE (trusted execution environment). \cite{j_bouman_comparison_nodate}
 
@@ -23,22 +23,22 @@ To have more computation depth possible, bootstrapping operations are performed 
 FHE schemes can be divided into multiple generations, depending on the type of bootstrapping techniques. \cite{robin_bootstraping_BGV_BFV}
 First generation schemes include schemes like the Gen09 bootstrapping technique, described in 2009, which is illustrated in figure \ref{fig:boot09}. FHE-encrypted data are FHE-encrypted a second time, with a lower level of noise compared to the initial encryption. Then, a bootstrapping key is sent to the computing node, which is the secret key of the initial encryption, encrypted with the public key of the second encryption. Decryption with this bootstrapping key removes the first encryption layer, and one ends up with data solely encrypted via the second FHE-scheme, with a lower level of noise. This type of scheme is no longer used in practical implementations.
 
-\begin{center}
+\begin{figure}
+    \centering
     \includegraphics[width=0.65\textwidth]{fig/Bootstrapping.png} 
     \captionof{figure}{Gen09 bootstrapping \cite{ilaria_chillotti_zama_tfhe_2022}}
     \label{fig:boot09}
-\end{center}
+\end{figure}
 
 Second generation schemes are defined by having a slow and complex bootstrapping. However, bootstrapping cost is compensated by the use of SIMD (Single Instruction Multiple Data) operations, which will distribute this cost over many slot, so many parallel computations. Examples are BGV, BFV and CKKS. 
 Third generation schemes are characterized by a very simple and fast bootstrapping procedure. These exhibit lower circuit complexity, faster execution times, and less noise growth when compared to second generation. On the contrary, they will not offer SIMD slots for parallel processing. Examples include torus FHE (TFHE). 
 
-Next to these generations, some \textcolor{red}{FHE} leveled homomorphic encryption schemes where no bootstrapping technique is known for the moment. The CLPX scheme fro Chen et al. \cite{Chen_CLPX_paper} is an example, where the parameters of the scheme are set as such level to allow deep circuit evaluation before noise corrupts the result.
+Next to these generations, some leveled homomorphic encryption schemes where no efficient bootstrapping technique is known for the moment. The CLPX scheme fro Chen et al. \cite{Chen_CLPX_paper} is an example, where the parameters of the scheme are set as such level to allow deep circuit evaluation before noise corrupts the result.
 
-\subsection{General-BFV}
-The BFV (Brakerski–Fan–Vercauteren) scheme is 
+\section{Cyclotomic rings and (R)LWE}
 
-\subsubsection{Cyclotomic rings}
-BFV is built on the RLWE problem (ring learning with errors), which is a hardness problem used in cryptography. We define the m-th cyclotomic polynomial as follows: 
+\subsection{Cyclotomic rings}
+BFV (Brakerski-Fan-Vercauteren) is built on the RLWE problem (ring learning with errors), which is a hardness problem used in cryptography. We define the m-th cyclotomic polynomial as follows: 
 \[
 \Phi_m(x) = \prod_{j \in \mathbb{Z}_m^\times} \bigl(x - \omega_m^j\bigr)
 \]
@@ -50,8 +50,8 @@ BFV is built on the RLWE problem (ring learning with errors), which is a hardnes
 
 The degree of the cyclotomic polynomial is equal to $\varphi(m)$, the result of the Euler's totient function of m. Although the cyclotomic polynomial have complex roots, it has been proven that the coefficients are integer numbers and the polynomials are monic (leading coefficient is 1) and irreducible. The RLWE problem is then defined over the ring $\mathcal{R} = Z[x]/(\phi_m(x)$. This ring is a subring of the cyclotomic number field $\mathbb{Q}[x]/(\Phi_m(x))$.
 
-\subsubsection{R-LWE}
-\textbf{LWE:} The ciphertext is constituted of two parts: uniform random numbers $a_{i}$ and $b$, where $b$ is the sum of the multiplication of the uniform random numbers $a_{i}$ with the secret key $s_{i}$, some Gaussian distributed noise $e$ and the message $m$, normalized by a delta coefficient. The corresponding ciphertext can be represented on a ring, all the possible values of m are put on a ring, at a spacing delta from each other. To decrypt, the decryption formula \eqref{eq:decrypt_LWE} is used, which is equivalent to rounding the value on the ring (which corresponds to delta times the message plus the error) to the closest possible value for m. If the error becomes too large, the value will round to the wrong message value, so returning a faulty message. 
+\subsection{LWE}
+ The ciphertext is constituted of two parts: uniform random numbers $a_{i}$ and $b$, where $b$ is the sum of the multiplication of the uniform random numbers $a_{i}$ with the secret key $s_{i}$, some Gaussian distributed noise $e$ and the message $m$, normalized by a delta coefficient. The corresponding ciphertext can be represented on a ring, all the possible values of m are put on a ring, at a spacing delta from each other. To decrypt, the decryption formula \eqref{eq:decrypt_LWE} is used, which is equivalent to rounding the value on the ring (which corresponds to delta times the message plus the error) to the closest possible value for m. If the error becomes too large, the value will round to the wrong message value, so returning a faulty message. 
 
 % One-line RLWE ciphertext definition
 \begin{equation}
@@ -76,12 +76,12 @@ m \approx \frac{b - \mathbf{a} \cdot \mathbf{s}}{\Delta}
 This scheme already allows to do some operations on the ciphertext: we can add two ciphertexts and perform multiplications of the ciphertext with non-encrypted integers.\footnote{An operation on ciphertexts will, in FHE, correspond to an operation on plaintexts.}
 
 
-\textbf{RLWE:} Ring LWE is similar to LWE but it will, when constructing the ciphertext, use polynomial modulo’s instead (for the message, secret key, uniform random numbers and error). When encrypting, we will normalize the message and add a Gaussian error, like in LWE. For every coefficient of the polynomial, the value of delta m plus the error will again be represented on a ring. Rounding will give the polynomial coefficients of the message m. 
+\subsection{RLWE} Ring LWE is similar to LWE but it will, when constructing the ciphertext, use polynomial modulo’s instead (for the message, secret key, uniform random numbers and error). When encrypting, we will normalize the message and add a Gaussian error, like in LWE. For every coefficient of the polynomial, the value of delta m plus the error will again be represented on a ring. Rounding will give the polynomial coefficients of the message m. 
 The RLWE scheme allows to perform additions between ciphertexts and multiplication with non-encrypted constant polynomial functions.
 
 The RLWE problem is based on the RLWE distribution for integers $q\ge2$ and a secret s sampled from $\chi_{key}$. The decision RLWE problem is, given many plaintext-ciphertext samples, to decide whether the samples come from a uniform random distribution or from the RLWE distribution. When solving the search RLWE problem, many plaintext-ciphertexts are given from the RLWE distribution, and one needs to find the secret s. Both variants are supposed to be hard. 
 
-\subsubsection{BFV, CLPX and SIMD}
+\section{BFV and CLPX}
 In BFV by Kim et al.\cite{BFVrounding_Kim}, a subring $\mathcal{R}_t$ of $\mathcal{R}$ is ceated by taking modulo t of rhe ring $\mathcal{R}$. In the case of BFV, we fix this $t$ to the prime integer $p$. The ciphertext also has a modulus q and the message is scaled by a factor $\delta = q/t$.
 The plaintext space corresponds to $R_t = \mathbb{Z}[x]/(\Phi_m(x), p)$.
 Encryption is then done via following formula:
@@ -92,13 +92,7 @@ Encryption is then done via following formula:
 m &= \Big\lfloor \frac{c_0 + c_1 \cdot \mathbf{s}}{\Delta} \Big\rceil
 \end{align}
 
-And decryption:
 The scheme can be implemented as a leveled scheme (SHE) or can be bootstrapped to a fully homomorphic encryption scheme.In BFV, one can perform addition, multiplication and automorphism over the plaintext space.
-
-\subsubsection{Slots}
-Smart and Vercauteren \cite{Smart2012FullyHS} noticed that it was possible to encode multiple elements in one plaintext, using the Chinese Remainder Theorem. This splitting in splots can allow SIMD operation - performing a single operation on multiple data. 
-
-BFV can support packing in slots and thus SIMD operations. However, doing this puts a restriction on the use of BFV. If $p$ is the modulus of the plaintext ($\phi_m(b)$), the upper bound of the output noise will grow proportional to to the product of this factor and the sum of the upper bounds on the input noise. When one wants to have a high precision arithmetic, one chooses a high p, which will result in more output noise. This makes SIMD-schemes impractical when performing precise arithmetic calculations, often needed in HE-applications. For instance, privacy-preserving machine learning uses moduli up to 80 bits.\cite{Giland_ML_big_P} Also, a higher value of $p$ enables a higher packing density. The packing density, which is equal to the number of slots divided by the ring dimension, is equal to 1/$d$. $D$ is the multiplicative order of $p$ modulo the cyclotomix index $m$. To achieve full packing, $p$ needs to be larger then $m$. When using power-of-two cyclotomics, the number of slots will be upper bounded by ($p$+1)/2. To conclude, while a large value of $p$ allows for greater packing density and more precise arithmetic operations, it simultaneously exacerbates noise growth.
 
 In CLPX, the idea is to use a plaintext ring modulo $t$, with $t=x-b$ instead of an integer $p$, as in BFV. The plaintext space is now defined as
 \begin{equation}
@@ -117,9 +111,9 @@ Decryption is performed using the secret key $\mathbf{s}$:
 In CLPX, addition and multiplication can be performed homomorphically.\cite{Chen_CLPX_paper}.
 
 CLPX can encrypt a single huge integer modulo $\phi_m(b)$ and has much lower noise growth when compared to BFV - the growth is sublinear in $b$ (instead of $\phi_m(b)$). This makes CLPX suitable for high-precision arithmetic HE operations. 
-However, in CLPX Only a single element is encrypted, so no SIMD operations can be performed. Also, since the size of $p$ is exponential in $m$, there are no known bootstrapping techniques for CLPX. 
+However, in CLPX Only a single element is encrypted, so no SIMD operations can be performed. Also, since the size of $p$ is exponential in $m$, there are no known efficient bootstrapping techniques for CLPX. 
 
-\subsection{GBFV}
+\section{GBFV}
 CLPX has much lower noise growth when compared to BFV, but does not support SIMD operations and is not known to be efficiently bootstrappable for cryptographically secure parameters. Geelen and Vercauteren propose the GBFV scheme which combines the SIMD and bootstrapping capabilities of BFV with the lower noise growth of CLPX, by tuning the parameters $m$ and $t(x)$. Combing both properties would either yield a scheme capable of evaluating deeper circuits or would yield a scheme capable of working with smaller ring dimensions. 
 
 GBFV operates over the cyclotomic ring $\mathcal{R}=\mathbb{Z}[x]/\phi_m(x)$. The plaintext space is defined modulo an arbitrary non-zero principal ideal generated by a polynomial $t=t(x)$. This ring is $R_t=R/tR$. 
@@ -164,30 +158,40 @@ m \mapsto t \cdot \big[ \frac{m}{t} \big]_1
 
     \item Automorphism. Applying an automorphism to the ciphertext polynomials, this permutes slots in packed plaintexts after decryption. Then, the plaintext moduli are corrected if they changed under the automorphism. A key switching is performed to bring back the secret key to s. Finally, the adjusted ciphertexts are combined to form the final output. 
     
-\subsection{SIMD}
-
-
- 
 \end{itemize}
+
+\section{SIMD}
+Smart and Vercauteren \cite{Smart2012FullyHS} noticed that it was possible to encode multiple elements in one plaintext, using the Chinese Remainder Theorem. This splitting in slots can allow SIMD operation - performing a single operation on multiple data. 
+
+BFV can support packing in slots and thus SIMD operations. However, doing this puts a restriction on the use of BFV. If $p$ is the modulus of the plaintext ($\phi_m(b)$), the upper bound of the output noise will grow proportional to to the product of this factor and the sum of the upper bounds on the input noise. When one wants to have a high precision arithmetic, one chooses a high $p$, which will result in more output noise. This makes BFV SIMD-schemes impractical when performing precise arithmetic calculations, often needed in HE-applications. For instance, privacy-preserving machine learning uses moduli up to 80 bits.\cite{Giland_ML_big_P} Also, a higher value of $p$ enables a higher packing density. The packing density, which is equal to the number of slots divided by the ring dimension, is equal to 1/$d$. $d$ is the multiplicative order of $p$ modulo the cyclotomix index $m$. To achieve full packing, $p$ needs to be larger then $m$. When using power-of-two cyclotomics, the number of slots will be upper bounded by ($p$+1)/2. To conclude, while a large value of $p$ allows for greater packing density and more precise arithmetic operations, it simultaneously exacerbates noise growth.
+
+GBFV works modulo a plaintext modulus polynomial $t(x)$. To enable SIMD computation we want this field
+to be isomorphic to a product of fields. To do this, we equal $p$ to the smallest positive integer in $t\mathcal{R}$ where $p$ is prime and $p \equiv 1\mod 2n$. 
+When $p$ is prime, then $\mathbb{F}_p[x]$ is a principal ideal domain. Since $p$ $\equiv 1\mod 2n$, the multiplicative group $\mathbb{F}_p^\times$ contains an element of order 2$n$, which guarantees that there exists a $\tau$ such that the 2$n$-th root of $\tau$ is equal to 1 and the $n$-th root of $\tau$ is equal to -1. Choosing $p$ in such way gives us base field encoding which is most commonly used to maximize the number of slots.
+We can then factor the plaintext ring $\mod p$: the ideal $(x_{n+1}, t(x))$ becomes $(\tau(x), p)$ where $\tau(x)$ is equal to the greatest common divisor of $(x_{n+1}, t(x))$. Thus the plaintext space becomes isomorphic to the product of fields, over a restricted set of roots of $\tau(x)$. We obtain SIMD slots where each slot corresponds to one of these roots of $\tau(x)$: 
+\begin{equation}
+    \mathbb{F}_p[x] / (\tau(x)) \;\cong\; \prod_{s \in S} \mathbb{F}_p.
+\end{equation}
+Homomorphic operations will be performed component-wise on these slots. Rotations of the slots can be performed via automorphisms. One can also use $p^e$ instead of $p$, which can increase plaintext correctness or reduce wraparound.
+
+In GBFV, a non-standard slot ordering is applied when compared to the conventional BFV scheme which usually switched the roles of the generators that determine the position of the slots. In GBFV only a part of the slots is used, so that operations are handled more naturally. This slot orderings maps noise with one full bit reversal, similmar to a plaintext NTT (number theoretic transform) algorithm. Increasing the modulus or doubling the dimension of the ring will add slots or duplicate slot-vectors respectively, which is more convenient to describe compared to BFV. Finally, slot permutations during conversion reduce to circular bit shifts on the slot indices, easier than complex reversals in BFV \cite{better_GBFV}.
 
 \section{Private information retrieval}
 When retrieving information from a remote server, the database holder will know which elements are queried. To protect the user, one wants to hide which elements are queried from the server. Private information retrieval or PIR is often considered to achieve this goal.
 
-Private information retrieval (PIR) is the process where a user retrieves information from a database without revealing to the database what he is retrieving. The goal is to ensure the server does not learn anything about the index from the user query. 
-This will enhance the privacy of the user, since no information will be leaked to the (remote) server(s), potentially causing serious privacy issues. PIR finds application in multiple scenarios where sensitive data are used. For example, a doctor querying a database with patient's medical data will get back the requested medical information, without the server learning which patient or which patient record was requested. PIR also finds applications in technology. Apple uses PIR to provide caller ID information of an incoming phone call, without them learning who is calling who \cite{apple_PIR}. 
+The goal of PIR is to ensure the server does not learn anything about the index from the user query. 
+This will enhance the privacy of the user, since no information will be leaked to the (remote) server(s), potentially causing serious privacy issues. PIR finds application in multiple scenarios where sensitive data are used. For example, a doctor querying a database with patient's medical data will get back the requested medical information, without the server learning which patient or which patient record was requested. PIR also finds application in technology. Apple uses PIR to provide caller ID information of an incoming phone call, without them learning who is calling who \cite{apple_PIR}. 
 
  
 PIR protocols can be categorized in two groups: single-server PIR and multi-server PIR. 
 The single-server PIR is the most straightforward setting: one server holds the full dataset, and the client queries the server to get the data of interest.
 In multi-server PIR, there are multiple servers holding a copy of the full dataset, and the client queries multiple servers to obtain the data of interest. The core idea when using multi-server PIR is that, although the dataset is replicated on multiple servers, the query is split into parts. In this way, none of the servers learn which bit is requested but the requested bit can be recovered from the results of the different servers. 
 
+A multi-server PIR scheme is demonstrated in the following example. Let D be the database with 4 bits, and the client wants to retrieve bit \( b_3 \) privately. There are two non-colluding servers holding a copy of the database.
 \[
 \textbf{Database: } 
 D = [\, b_1,\, b_2,\, b_3,\, b_4 \,]
 \]
-The client wants to retrieve \( b_3 \) privately.
-
----
 
 \[
 \textbf{Step 1: Query generation}
@@ -200,31 +204,26 @@ and constructs
 \[
 q_2 = q_1 \oplus e_3
 \]
-where 
+where $e_3$ is the unit vector with a one in the third position.
 \[
 e_3 = [\, 0,\, 0,\, 1,\, 0 \,]
 \]
-is the unit vector with a 1 in the 3rd position.
 
-The client sends:
+The client sends $q_1$ to Server 1, 
 \[
-q_1 \text{ to Server 1}, \quad q_2 \text{ to Server 2.}
+\quad q_2 \text{ to Server 2.}
 \]
-
----
 
 \[
 \textbf{Step 2: Servers compute answers}
 \]
-Each server computes the XOR of the database entries where its query has 1s:
+Each server computes the XOR of all b's at positions where the query vector has a one:
 \[
 a_1 = q_1 \cdot D = \bigoplus_{j=1}^{4} (q_{1j} \cdot b_j)
 \]
 \[
 a_2 = q_2 \cdot D = \bigoplus_{j=1}^{4} (q_{2j} \cdot b_j)
 \]
-
----
 
 \[
 \textbf{Step 3: Client combines responses}
@@ -238,28 +237,79 @@ a_1 \oplus a_2
 = b_3
 \]
 
----
+In this way, the client learns $b_3$, and neither server learns which $b_i$ was requested.
 
-\[
-\boxed{
-\text{Client learns } b_3 \text{, and neither server learns which } b_i \text{ was requested.}
-}
-\]
-
-Security holds as long as the servers do not collude. This assumption is difficult to achieve, because the database has to be on multiple servers, but one party can not have control over these servers. Therefore, single-server PIR schemes are often preferred since they rely on cryptographic hardness assumptions, but at the cost of incurring a huge performance overhead.  
+Security holds as long as the servers do not collude. This assumption is difficult to achieve, because the database is usally under one authority and distributing the database on multiple servers with different authorities is mostly not feasible in practice. Therefore, single-server PIR schemes are often preferred since they rely on cryptographic hardness assumptions, but at the cost of incurring a performance overhead.  
 In this thesis, we will further focus on single-server PIR. 
 
-A scheme is information-theoretic secure when the queries asked by the user give no information whatsoever about the requested bit. 
-For a single-server PIR scheme, the trivial information-theoretic secure scheme is sending the whole database to the client, he can then query the database and the server will have no information about the selected bit. This gives a communication of O(n). Single-server PIR schemes with smaller communication cost are computationally secure, not information-theoretic secure.   \cite{Christien1999} \cite{kushilevitz1997} \cite{sion2007}
-Kushilevitz and Ostrovsky made use of the number-theoretic assumption to deduce a single-server computationally secure PIR with subpolynomial communication. The scheme has a communication complexity of O(n to the epsilonth) for any epsilon > 0. This scheme however requires n big integer multiplications.
-Cachin et al. proposed a two-round computationally secure PIR using the phi-hiding assumption where communication complexity is polylogarithmic in n. This scheme requires n modular exponentiations, with large moduli, which makes multiplication slower then in Kuhilevitz's scheme.
-Chang subsequently proposed a scheme with logarithmic communication complexity, using Paillier's cryptosystem.
-As Sion and Carbunar pointed out, these single-server PIR protocols are mostly orders of magnitude slower than the trivial transfer of the entire database to the client.
+A scheme is information-theoretic secure when the queries asked by the user give no information whatsoever about the requested bit to the server. Multi-server PIR schemes can achieve information-theoretic security, such as the PIR-protocol proposed by Ghoshal et al. \cite{Ghoshal2024}. Single-server PIR schemes can not achieve information-theoretic security. One exception, when the single server sends the full database to the client. The client can then query the database and the server will not learn anything about the requested bit. However, this trivial scheme has a communication cost of $\mathcal{O}(n)$, with $n$ the size of the database. Single-server PIR schemes with smaller communication cost are only computationally secure; computationally secure schemes only guarantee that the server can not compute the requested bit in a reasonable amount of time, given the queries. 
+Kushilevitz and Ostrovsky made use of the number-theoretic assumption to deduce a single-server computationally secure PIR with subpolynomial communication cost \cite{kushilevitz1997}. The scheme has a communication complexity of $\mathcal{O}(n^\epsilon)$ for any $\epsilon > 0$. This scheme however requires $n$ big integer multiplications.
+Cachin et al. proposed a two-round computationally secure PIR using the $\phi$-hiding assumption where communication complexity is polylogarithmic in $n$. This scheme requires $n$ modular exponentiations, with large moduli, which makes multiplication slower then in Kuhilevitz's scheme \cite{Christien1999}.
+Chang subsequently proposed a scheme with logarithmic communication complexity, using Paillier's cryptosystem \cite{paillier1999,Chang2004}.
+In 2007, Sion and Carbunar pointed out that these single-server PIR protocols are mostly orders of magnitude slower than the trivial transfer of the entire database to the client \cite{sion2007}. Later work by Aguilar-Melchor et al. however showed that this argument is incorrect: single-server PIR can be faster than downloading the entire database, when using lattice-based cryptographic methods. These methods have smaller per-bit computation cost when used in a batched fashion \cite{Aguilar-Melchor2014}. 
 
-FHE-based PIR allows computation over encrypted data and offers optimal communication and computation complexity. 
+More recent PIR protocols make use of fully homomorphic encryption. FHE typically incurs significant communication overhead due to the ciphertext expansion factor. However, keeping the query size as low as possible while maintaining computation cost reasonable is the objective in these protocols. Arranging the database as a hypercube will increase the computation efficiency, as used in Respire \cite{Respire2024}. Furthermore, transciphering can be used to further lower the query size. In transciphering, the client will use a symmetric encryption scheme to encrypt the query, which is then homomorphically evaluated on the server side. The server will homomorphically decrypt the query and evaluate it on the database, returning the encrypted result to the client. The client will then decrypt the result symmetrically. This method reduces communication cost since FHE ciphertexts are only used for the query and result, while symmetric encryption is used for the database. 
+Kang proposed a novel transciphering method to further reduce the communication cost when compared to (T-)Respire \cite{TRespier2024,TRespier2025}. In this scheme, the client transmits only one part of the LWE ciphertext. The full LWE ciphertext is reconstructed using a pseudo random generator seed shared between the client and server. By sending only a single LWE component and a short seed, Pirouette succesfully achieves query compression while keeping computational cost associated with transciphering reasonable. \cite{Pirouette2025}.
 
-\section{Feanor-math and feanor}
-Feanor-math and feanor are bothe rust libraries made by Simon Pohmann a PhD student at Royal Holloway, University of London. Hise filed of studie is criptographie and computational mathematics. \cite{feanor_creator} Feanor-mat is a library for number theory, and feanor is a library that provides implementions of building blocks for HE, build on feanor-math.
+\section{PIRANA}
+PIRANA is a single-server protocol developed at Zhejiang University \cite{PIRANA2023}. 
+The protocol is based on constant-weight codes, which is a way to encode the queries. In constant-weight codes, all codewords have a length $m$ and have the same Hamming weight, meaning they have the same number of ones. In later steps, it will be clear how the database is structured and how information is retrieved. There should at least be the same amount of codewords as there are columns in the database. To estimate the length of the codeword in bits, we need to know the number of columns and the Hamming weight $k$. The number of codewords is equal to the binomial coefficient \( \binom{m}{k} \). To estimate the code length $m$, knowing the Hamming weight $k$ and the number of columns $n$, we can then use following formula: 
+\begin{equation}
+    m \in O\!\left(\sqrt[k]{k! \, n}  + k \right)
+\end{equation}
+According to the Mahdavi-Kerschbaum mapping method, every index $i$ of a column is mapped to the $i$-th codeword.
 
-\subsection{Feanor-math}
-Like mentiond before feanor-math is a library for number theory. The librari is complietly rithen in rust. The library starts from a main trait\footnote{Trait definitions are a way to group method signatures together to define a set of behaviors necessary to accomplish some purpose.\cite{rustbook}} \texttt{Ring}, and then creathes a thread yiarchie for additional properties.
+PIRANA can be used in single-query and multi-query set-up. In the following part, single-query PIRANA will be discussed for small and large payloads, as well as a comparison of PIRANA with constant-weight PIR (cwPIR).
+
+%CwPIR requires (k − 1)n ciphertext-ciphertext multiplications, CwPIR requires (k − 1)n ciphertext-ciphertext multiplications, which is disastrous when n is large.
+
+\subsection{Single-query PIRANA for small payloads}
+In single-query PIRANA for small payloads, the client wants to retrieve a single element from the database. Small payloads means the elements in the database are smaller then the plaintext modulo $p$. So multiple elements can be packed in one ciphertext. The database of $n$ elements is structured as a 2D-matrix with $r$ rows and $c$ columns, where $n = r \cdot c$ and $r$ is the number of slots in a ciphertext. Every column is represented by one codeword of length $m$ and Hamming weight $k$. To determine $m$ and $k$, one wants to find the smallest $m$ such that \( \binom{m}{k} \ge c \). 
+To retrieve an element in position $(i,j)$, the client constructs a query made out of $m$ ciphertexts, with $r$ ciphertext slots, thereby constructing a matrix of size $m \times r$. 
+This is a all-zero matrix, except for the $i$-th row, which contains the codeword corresponding to column $j$. This query is then sent to the server. 
+The sever will receive this query and, for every column, will take the corresponding codeword. For every bit equal in the codeword, the server will take the corresponding column from the query and perform $k-1$ homomorpic multiplications. The server will do this for all columns, thus $k-1*n$ ciphertext-ciphertext multiplications. Hereby creating a selection matrix of size $r \times c$. All values in these matrix are zero, except for the position $(i,j)$, which contains the one. Every column is a ciphertext. The server will then perform a ciphertext-plaintext multiplication between the columns of the selection matrix and the columns of the database. This can be done because the dimensions of both matrices match. Finally, the server will sum up all columns, returning a ciphertext with $r$ slots, where all slots are zero, except for slot $i$, which contains the requested element. This ciphertext is sent back to the client, who will decrypt and get the requested element.
+
+% Figgur van Single-Query Pirana
+
+This protocol has some flaws. First of all, if $n$s is large, the amount of ciphertext-ciphertext multiplications becomes huge. Secondly, the communication cost to retrieve one element is high, since the client needs to send $m$ ciphertexts to the server, and the server will return one ciphertext with $r$ slots. Lastly, when choosing a large $k$, the amount of ciphertext-ciphertext multiplications increase and $m$ increases too, which will increase the communication cost.
+
+\subsection{Single-query PIRANA for large payloads}
+PIRANA can also be used for large payloads, i.e. elements that are bigger than the plaintext modulus $p$. Every element is split into multiple chunks, each chunk smaller than $p$. The database is now a 3D-matrix of size $r \times c \times l$, where $l$ is the number of layers, equal to the number of chunks per element. The selection matrix is created in the same way as for small payloads, resulting in a matrix of size $r \times c$. In the next step every column of the selection matrix is multiplied not with one column but with $l$ columns of the database. 
+The results of this multiplication give a 2D-matrix of size $r \times l$. Every column is a ciphertext with all zeros, except at position $i$, which contains one chunk of the requested element. To reduce the amount of ciphertexts to send back to the client, the algorithm will perform a rotate-and-sum operation. In this operation, the first column/ciphertext is rotated by one position, and the second column is added to it. This sum is then rotated by one position again, and added with the third column. This is repeated untill all columns are added. If there are more chunks then slots in a ciphertext, a new ciphertexts are needed to retrieve the remaining chunks. The final ciphertexts are sent back to the client, which will decrypt and can reconstruct the requested element, by combining the chunks. 
+
+% Antoine Zet een figuur rotate-and-sum figuur
+
+For small database size $n$, one could pre-compute the rotations in the set-up time of the database. This will reduce the computation time when performing a query to the database. 
+
+\subsection{PIRANA performance comparison}
+Liu et al. compared the performance of PIRANA with constant-weight PIR. PIRANA was implemented in C++ based on Microsoft SEAL HE library \footnote{https://github.com/microsoft/SEAL}, and the BFV scheme was used with $N \in \{4096,8192\}$. Tests are performed on an Intel Xeon Cooper Lake with a base frequency of 3.4 GHz and turbo frequency of 3.8 GHz. The server was running on Ubuntu 20.04. This set-up is done similar to the set-up of cwPIR \cite{Mahdavi2022}.
+PIRANA outperforms cwPIR in terms of selection vector generation time. As expected: in PIRANA $c \cdot (k-1)$ ciphertext-ciphertext multiplications are needed, while in cwPIR $n \cdot (k-1)$ multiplications are needed. When the database size $n$ increases, the difference in performance becomes larger. Inner product calculation is also faster in PIRANA when compared to cwPIR. In cwPIR, every ciphertext needs to be transformed using NTT (number theoretic transform) before multiplying with the database. In PIRANA, there are only $m$ ciphertexts to transform, which is $r$ times smaller than $n$. The query size of PIRANA is up to 2.5 times larger when compared to cwPIR, and the response size is equivalent. Thus, commmunication cost is higher in PIRANA. But, one can query $\left\lfloor \frac{N}{1.5} \right\rfloor$ elements for the same communication cost in PIRANA (multi-query).
+
+% figuur uit pirana paper
+
+PIRANA was also compared to some state-of-the-art PIR schemes by Liu et al. \cite{PIRANA2023}. To answer a single query, PIRANA is mostly slower than other PIR schemes. However, PIRANA becomes more competitive when the number of queries increases. 
+
+\section{Fheanor}
+In this thesis, we will implement GBFV in the Fheanor library\footnote{https://github.com/FeanorTheElf/fheanor}. Feanor is a Rust library containing building blocks for homomorphic encryption, implementing several FHE schemes, including BFV and CLPX\footnote{CLPX is not implemented in any other major library \cite{feanor_paper}}. Fheanor is build on feanor-math\footnote{https://github.com/FeanorTheElf/feanor-math}, a Rust library for number theory and algebra. Both libraries are open-source and can be found on GitHubu.
+
+The library supports implementations over both power-of-two and genaral cyclotomics \cite{feanor_paper}. This is interesting for FHE implementations, in particular because the use of non-power-of-two cyclotomics can allow greater SIMD capabilities by having a larger number of slots with small plaintext moduli. Feanor also explicitly models arithmetic circuits, providing tools for their computation. The Fheanor library is close in performance to the HELib and SEAL libraries, which are state-of-the-art. 
+
+Spiessens created a wrapper called easy-GBFV, which will use the Fheanor library to create a GBFV-scheme. This wrapper offers some easy-to-use functions. Some functions that will be used in this GBFV implementation are:
+
+\begin{itemize}
+    \item get\_gbfv\_(16/32/64)bit(): creates a GBFV scheme with plaintext modulo 16, 32, or 64 bits.
+    \item pack(): to get an amount of slots in a ciphertext.
+    \item slot\_ring(): hands the canonical slot ring instance that the hypercube uses for plaintext packing.
+    \item gen\_sk(): generates a secret key for the GBFV scheme.
+    \item gen\_pk(\&SecretKey): generates a public key for the GBFV scheme.
+    \item enc\_slots(): will take the output of slot\_ring() and encrypt it.
+    \item dec\_slots(): will decrypt a ciphertext and return the slots.
+    \item clone\_ct(): clones an element of the ciphertext.
+    \item hom\_mul(): performs homomorphic multiplication between two ciphertexts.
+    \item hom\_rotate(): will rotate the slots in the ciphertext.
+    \item hom\_matmaul(): performs homomorphic matrix multiplication between a ciphertext and a plaintext matrix.
+    \item hom\_add(): performs homomorphic addition between two ciphertexts.
+\end{itemize}
+
+
+    % add the parameters

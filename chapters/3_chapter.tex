@@ -1,166 +1,45 @@
-\chapter{The Next Chapter}
+\chapter{PIR implementation}
 \label{cha:3}
-\lipsum[77]
-
-\section{The First Topic of this Chapter}
-\lipsum[78]
-
-\subsection{An item}
-A master's thesis is never an isolated work. This means that your text must
-contain references. On-line documents as well as can be referenced.
-
-Usually a text also contains inline formulas (\(\sin^2\eta + \cos^2\eta = 1\))
-or formulas as separate equations.
-\begin{equation}
-  \sigma(t) = \frac{1}{\sqrt{2\pi}} \int_0^t e^{-x^2/2} dx 
-\end{equation}
 
 
-\section{Figures}
-Figures are used to add illustrations to the text. The \fref{fig:logo} shows
-the KU~Leuven logo as an illustration.
-\begin{figure}
-  \centering
-  \includegraphics{kulemt-tex/logokuleng-en}
-  \caption{The logo of the Faculty of Engineering Science.}
-  \label{fig:logo}
-\end{figure}
+\section{GBFV-PIRANA, single-query small payload}
+In this section, the implementation of the PIRANA protocol using the easy-GBFV library is presented. The implementation is a single-query implementation for small payloads. This means that the elements of the database are smaller when compared to the plaintext modulus $p$. To test the implementation, client and server are created in the same file. Therefore, there is no need to send the public key from client to server. The single-query small payload implementation can be found in the \verb|examples\5_GBFV_PIRANA_Spayload| folder of the thesis github \footnote{\textcolor{red}{github implementation of antoine}}. 
 
-\section{Tables}
-Tables are used to present data neatly arranged. A table is normally
-not a spreadsheet! Compare \tref{tab:wrong} en \tref{tab:ok}: which table do
-you prefer?
+First, a database/matrix is created with size $r \cdot c$, where $r$ is equal to the number of slots in the ciphertext and $c$ is equal to the amount of elements divided by the number of slots in the ciphertext \footnote{When working with small payloads, all elements in the database are of maximal size i32 or plaintext modulo.}. All indices of the columns of the matrix are substituted with a constant weight codeword. To achieve this, $m$ and $k$ have to be chosen properly. In this implementation, $k$ will be set to 2, meaning that every codeword has a Hamming weight of 2. This will keep the amount of ciphertext-ciphertext multiplications low. Knowing $k$, $m$ can be calculated as $c \leq \binom{m}{2}$, with $c$ the amount of columns in the matrix. Later, every column will be multiplied with a ciphertext. Therefore, the plaintext elements of one column are set into a plaintext ring.
 
-\begin{table}
-  \centering
-  \begin{tabular}{||l|lr||} \hline
-    gnats     & gram      & \$13.65 \\ \cline{2-3}
-              & each      & .01 \\ \hline
-    gnu       & stuffed   & 92.50 \\ \cline{1-1} \cline{3-3}
-    emu       &           & 33.33 \\ \hline
-    armadillo & frozen    & 8.99 \\ \hline
-  \end{tabular}
-  \caption{A table with the wrong layout.}
-  \label{tab:wrong}
-\end{table}
+Subsequently, an instance of GBFV is created. When creating this instance, one has to set several attributes. One has to choose $m1$ in such a way that $m$, the cyclotomic order, can be divided by $m1$, to create the number of slots $m2$. A second attribute is $log2(N)$, which will determine the cyclotomic order $m$ as $m = 2^{log2(N)+1}$. \textcolor{red}{ A prime number $p_{mod}$ is a prime which will determine the plaintext modulus.} Attribute $t$, which is the plaintext modulus, also has to be set. In our case, we use BGFV, so $t$ is a polynomial. 
+After creating the GBFV instance, the slot\_ring() function will create a slot representation. 
 
-\begin{table}
-  \centering
-  \begin{tabular}{@{}llr@{}} \toprule
-    \multicolumn{2}{c}{Item} \\ \cmidrule(r){1-2}
-    Animal    & Description & Price (\$)\\ \midrule
-    Gnat      & per gram    & 13.65 \\
-              & each        & 0.01 \\
-    Gnu       & stuffed     & 92.50 \\
-    Emu       & stuffed     & 33.33 \\
-    Armadillo & frozen      & 8.99 \\ \bottomrule
-  \end{tabular}
-  \caption{A table with the correct layout.}
-  \label{tab:ok}
-\end{table}
+Having a database and having created a GBFV instance, the PIRANA set-up is finished. The client can now create a query for an element in the database. Imagine the client wants to retrieve element ($i,j$) from the database. First, the client will look up which codeword corresponds to column $j$. The client will create the query matrix, which is a matrix of size $r \cdot m$. This matrix is an all-zero matrix, except for the $i$-th row, which is subsituted with the codeword. 
 
-\section{Lorem Ipsum}
-This section is added to check headers and footers. So this chapter must at
-least contain three pages. To make sure that we get the required amount,
-the \textsf{lipsum} package isn't used but the text is put directly in the
-text.
+Before sending the query, the client has to encrypt the query. Therefore, he generates a secret key and a public key. Every column of length $r$ (amount of slots in a ciphertext) will be encrypted. The client sends $m$ ciphertexts to the server. 
 
-\subsection{Lorem ipsum dolor sit amet, consectetur adipiscing elit}
-Sed nec tortor id felis tristique sodales. Nulla nec massa eu dui fermentum
-tincidunt. Integer ullamcorper ante eget eros posuere faucibus. Nam id
-ligula ut augue pulvinar vulputate id at purus. Aenean condimentum tortor
-eu mi placerat eget eleifend massa mollis. Nam est mi, sagittis quis
-euismod eget, sagittis in nibh. Proin elit turpis, aliquam et imperdiet
-sed, volutpat eu turpis.
+The server will, for each column, take the codewords of length $m$ and look at which position the codeword has a 1. In our case, there are only two one's (remember, the Hamming weight equals 2). The server will take the corresponding ciphertexts of these two positions in the query and multiply them with each other. This new ciphertext is one column of the selection matrix. This process is repeated for all $c$ columns of the database. After creating the selection matrix, the server will perform a homomorphic plaintext-ciphertext multiplication between every column of the selection matrix and the corresponding column of the database. Finally, all the columns of the resulting matrix are summed together, by going through all the columns and adding them via an accumulator. The result is then sent back as one ciphertext to the client. 
 
-Pellentesque vel enim tellus, vitae egestas turpis. Praesent malesuada elit
-non nisi sollicitudin non blandit lacus tincidunt. Morbi blandit urna at
-lectus ornare laoreet. Suspendisse turpis diam, lobortis dictum luctus
-quis, commodo at lorem. Integer lacinia convallis ultricies. Sed quis augue
-neque, eu malesuada arcu. Nullam vehicula, purus vitae sagittis pulvinar,
-erat eros semper massa, eu egestas nibh erat quis magna. Cras pellentesque,
-nisl eu dapibus volutpat, urna augue ornare quam, quis egestas lectus nulla
-a lectus.
+The client will receive the ciphertext from the server and will decrypt using his secret key. Every ciphertext is decrypted and will return a vector of slot ring elements. All elements are equal to zero, except for the $i$-th element, which is equal to the desired element in the database. The client can now format this element and retrieve the desired value. 
 
-Vivamus dictum libero in massa cursus sed vulputate eros imperdiet. Donec
-lacinia, libero ac lobortis egestas, nibh dui ornare arcu, luctus porttitor
-velit massa sit amet quam. Maecenas scelerisque laoreet diam, vitae congue
-quam adipiscing vitae. Aliquam cursus nisl a leo convallis eleifend
-fermentum massa porta. Nunc libero quam, dapibus dapibus molestie sit amet,
-faucibus vel nunc.
 
-\subsection{Praesent auctor venenatis posuere}
-Sed tellus augue, molestie in pulvinar lacinia, dapibus non ipsum. Fusce
-vitae mi vitae enim ullamcorper hendrerit eu malesuada est. Proin iaculis
-ante sed nibh tincidunt vel interdum libero posuere. Vivamus accumsan metus
-quis felis congue suscipit dapibus enim mattis. Fusce mattis tortor eget
-ipsum interdum sagittis auctor id metus.
 
-Integer diam lacus, pharetra sit amet tempor et, tristique non lorem.
-Aenean auctor, nisi eu interdum fermentum, lectus massa adipiscing elit,
-sed facilisis orci odio a lectus. Proin mi nibh, tempus quis porta a,
-viverra quis enim. In sollicitudin egestas libero, quis viverra velit
-molestie eget. Nulla rhoncus, dolor a mollis vestibulum, lacus elit semper
-nisi, nec sollicitudin sem urna eu magna. Nunc sed est urna, euismod congue
-mi.
+\section{GBFV-PIRANA, single-query large payload}
+In this section, the implementation of a single-query PIR protocol for large payloads using the easy-GBFV library is presented. The implementation can be found in the \verb|examples\5_GBFV_PIR_Lpayload| folder of the thesis github \footnote{\textcolor{red}{github implementation of antoine}}.
 
-\subsection{Cras vulputate ultricies venenatis}
-Vivamus eros urna, sodales accumsan semper vel, lobortis sit amet mauris.
-Etiam condimentum eleifend lorem, ullamcorper ornare lectus aliquet vitae.
-Praesent massa enim, interdum sit amet semper et, venenatis ut elit.
-Quisque faucibus, quam ac lacinia imperdiet, nulla neque elementum purus,
-tempus rutrum justo massa porta sapien. Vestibulum ante ipsum primis in
-faucibus orci luctus et ultrices posuere cubilia Curae; Sed ultrices
-interdum mi, et rhoncus sapien rutrum sed.
+% To create the database, some specific help functions are used\footnote{All of the helper functions are in \verb|examples\\6_GBFV_PIR_Lpayload\\matrix_util|}:
 
-Duis elit orci, molestie quis sollicitudin sed, convallis non ante.
-Maecenas tincidunt condimentum justo, et ultricies leo tristique vitae.
-Vestibulum quis quam non lectus dapibus eleifend a vitae nibh. Nam nibh
-justo, pharetra quis iaculis consequat, elementum quis justo. Etiam mollis
-lacinia lacus, nec sollicitudin urna lobortis ac. Nulla facilisi.
 
-Proin placerat risus eleifend erat ultricies placerat. Etiam rutrum magna
-nec turpis euismod consectetur. Phasellus tortor odio, lacinia imperdiet
-condimentum sed, faucibus commodo erat. Phasellus sed felis id ante
-placerat ultrices. Aenean tempor justo in tortor volutpat eu auctor dolor
-mollis. Aenean sit amet risus urna. Morbi viverra vehicula cursus.
+\begin{itemize}
+    \item d3\_finder(element\_size\_bit: usize, p\_mod: \&str): This function will determine in how many chunks a large payload can be split. It will return the amount of chunks. To achieve this, the function needs to know the \textcolor{red}{plaintext modulus p\_mod} and the maximal size of an element in the database (in bits). 
+    
+    Equation \ref{eq:chunk_estimator} shows how the number of chunks are calculated. 
+    \begin{equation}
+        number of chunks = \left \lceil \frac{element\_size\_bit}{\lfloor log_2(p\_mod) \rfloor} \right \rceil
+        \label{eq:chunk_estimator}
+    \end{equation}
+    \item base\_p\_decompose(n,p, chunks): This function will do a base-p decomposition of a big integer $n$ into $chunks$ amount of chunks. Euclidian division of the integer $n$ by the plaintext modulus $p$ is used. The division will be done $chunks$ amount of times, and every chunk will keep the remainder of the division. This will create a vector of size $chunks$, containing numbers smaller than $p$.
+    \item recompose\_base\_p\_to\_str(digits, p): This function will recompose the chunks back into one large integer. It will take the vector of chunks and the plaintext modulus $p$. The recomposition is done by multiplying every chunk with $p^i$, with $i$ the index of the chunk in the vector. The results are summed together to create one large integer, which is then converted to a string and returned.
+    \begin{equation}
+        n = \sum_{i=0}^{chunks-1} digits[i] \cdot p^i
+    \end{equation}
+    \item \verb|get_rand_matrix(nr_elements, element_size_bits, nr_slots, p)|: To create the database, this function is used. It will create a 3D-matrix with size $r \cdot c \cdot d3$, with $r$ the number of slots in a ciphertext, $c$ the number of elements divided by the number of slots, and $d3$ the amount of chunks needed to split one large element. Every element in the database is a large integer with size equal to $element\_size\_bits$. Every large integer is split into $d3$ chunks via base-p decomposition. This function will return the 3D-matrix.
+    % To increase the performance, one can already shift the elements of the next chunks. This will allow to avoid the rotate-operation when the server is computing, to fit multiple chunks in one ciphertext.  
+\end{itemize}
 
-\subsection{Donec nibh ante, consectetur et posuere id, tempus nec arcu}
-Curabitur a tellus aliquet ipsum pellentesque scelerisque. Etiam congue,
-risus et volutpat rutrum, est purus dapibus leo, non cursus metus felis
-eget ligula. Vivamus facilisis tristique turpis, ut pretium lectus luctus
-eleifend. Fusce magna sapien, ullamcorper vitae fringilla id, euismod quis
-ante.
-
-Phasellus volutpat, nunc et pharetra semper, sem justo adipiscing mauris,
-id blandit magna quam et orci. Vestibulum a erat purus, ut molestie ante.
-Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere
-cubilia Curae; Proin turpis diam, consequat ut ullamcorper ut, consequat eu
-orci. Sed metus risus, fringilla nec interdum vel, interdum eu nunc.
-Suspendisse vel sapien orci.
-
-\subsection{Morbi et mauris tempus purus ornare vehicula}
-Mauris sit amet diam quam, eget luctus purus. Sed faucibus, risus semper
-eleifend iaculis, mi turpis bibendum nisl, quis cursus nibh nisl sit amet
-ipsum. Vestibulum tempor urna vitae mi auctor malesuada eget non ligula.
-Nullam convallis, diam vel ultrices auctor, eros eros egestas elit, sed
-accumsan arcu tortor eget leo. Vestibulum orci purus, porttitor in pharetra
-eget, tincidunt eget nisl. Nullam sit amet nulla dui, facilisis vestibulum
-dui.
-
-Donec faucibus facilisis mauris ac cursus. Duis rhoncus quam sed nisi
-laoreet eu scelerisque massa tincidunt. Vivamus sit amet libero nec arcu
-imperdiet tempor quis non libero. Sed consequat dignissim justo. Phasellus
-ullamcorper, velit quis posuere vulputate, felis erat tincidunt mauris, at
-vestibulum justo lectus et turpis. Maecenas lacinia convallis euismod.
-Quisque egestas fermentum sapien eu dictum. Sed nec lacus in purus dictum
-consequat quis vel nisl. Fusce non urna sem. Curabitur eu diam vitae elit
-accumsan blandit. Nullam fermentum nunc et leo dictum laoreet. Donec semper
-varius velit vel fringilla. Vivamus eu orci nunc.
-
-\section{Conclusion}
-The final section of the chapter gives an overview of the important results
-of this chapter. This implies that the introductory chapter and the
-concluding chapter don't need a conclusion.
-
-\lipsum[66]
