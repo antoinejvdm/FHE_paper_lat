@@ -1,3 +1,58 @@
+%GBFV paper 1
+@misc{Geelen2024FHECyclotomic,
+  author       = {Robin Geelen and Frederik Vercauteren},
+  title        = {Fully Homomorphic Encryption for Cyclotomic Prime Moduli},
+  howpublished = {Cryptology {ePrint} Archive, Paper 2024/1587},
+  year         = {2024},
+  doi          = {10.1007/978-3-031-91131-6_13},
+  url          = {https://eprint.iacr.org/2024/1587}
+}
+
+%GBFV paper 2 (beter_GBFV)
+@misc{better_gbfv,
+  author       = {Robin Geelen and Frederik Vercauteren},
+  title        = {Better {GBFV} Bootstrapping and Faster Encrypted Edit Distance Computation},
+  howpublished = {Cryptology {ePrint} Archive, Paper 2025/1104},
+  year         = {2025},
+  url          = {https://eprint.iacr.org/2025/1104}
+}
+
+%BFV paper 1
+@misc{Brakerski2012,
+  author       = {Zvika Brakerski},
+  title        = {Fully Homomorphic Encryption without Modulus Switching from Classical {GapSVP}},
+  howpublished = {Cryptology {ePrint} Archive, Paper 2012/078},
+  year         = {2012},
+  url          = {https://eprint.iacr.org/2012/078}
+}
+
+%BFV paper 2
+@misc{Fan2012,
+  author       = {Junfeng Fan and Frederik Vercauteren},
+  title        = {Somewhat Practical Fully Homomorphic Encryption},
+  howpublished = {Crytology {ePrint} Archive, Paper 2012/144},
+  year         = {2012},
+  url          = {https://eprint.iacr.org/2012/144}
+}
+
+%CLPX paper
+@inproceedings{Chen_CLPX_paper,
+  title     = {High-Precision Arithmetic in Homomorphic Encryption},
+  keywords  = {Encoding encrypted arithmetic, Homomorphic encryption},
+  author    = {Hao Chen and Kim Laine and Rachel Player and Yuhou Xia},
+  year      = {2018},
+  month     = mar,
+  day       = {7},
+  doi       = {10.1007/978-3-319-76953-0\_7},
+  language  = {English},
+  isbn      = {978-3-319-76952-3},
+  series    = {Lecture Notes in Computer Science },
+  publisher = {Springer},
+  pages     = {116--136},
+  booktitle = {Topics in Cryptology – CT-RSA 2018},
+  note      = {International Conference on Cryptographers Track at the RSA Conference on Topics in Cryptology, CT-RSA 2018 ; Conference date: 16-04-2018 Through 20-04-2018}
+}
+
 @misc{ilaria_chillotti_zama_tfhe_2022,
   title   = {{TFHE} {Deep} {Dive} - {Ilaria} {Chillotti}, {FHE}.org },
   url     = {https://www.youtube.com/watch?v=LZuEr4jpyUw},
@@ -40,13 +95,7 @@
   doi     = {10.1007/s00145-023-09454-6}
 }
 
-@misc{better_gbfv,
-  author       = {Robin Geelen and Frederik Vercauteren},
-  title        = {Better {GBFV} Bootstrapping and Faster Encrypted Edit Distance Computation},
-  howpublished = {Cryptology {ePrint} Archive, Paper 2025/1104},
-  year         = {2025},
-  url          = {https://eprint.iacr.org/2025/1104}
-}
+
 
 @inproceedings{Giland_ML_big_P,
   title     = {CryptoNets: Applying Neural Networks to Encrypted Data with High Throughput and Accuracy},
@@ -98,22 +147,7 @@
   note      = {\url{https://doc.rust-lang.org/book/}, Accessed: 2025-11-14}
 }
 
-@inproceedings{Chen_CLPX_paper,
-  title     = {High-Precision Arithmetic in Homomorphic Encryption},
-  keywords  = {Encoding encrypted arithmetic, Homomorphic encryption},
-  author    = {Hao Chen and Kim Laine and Rachel Player and Yuhou Xia},
-  year      = {2018},
-  month     = mar,
-  day       = {7},
-  doi       = {10.1007/978-3-319-76953-0\_7},
-  language  = {English},
-  isbn      = {978-3-319-76952-3},
-  series    = {Lecture Notes in Computer Science },
-  publisher = {Springer},
-  pages     = {116--136},
-  booktitle = {Topics in Cryptology – CT-RSA 2018},
-  note      = {International Conference on Cryptographers Track at the RSA Conference on Topics in Cryptology, CT-RSA 2018 ; Conference date: 16-04-2018 Through 20-04-2018}
-}
+
 
 @inproceedings{BFVrounding_Kim,
   author    = {Andrey Kim and Yuriy Polyakov and Vincent Zucca},
@@ -166,6 +200,16 @@
   pages     = {364--373}
 }
 
+% proof that cyclotomic polynomials are monic and irreducible
+@phdthesis{AlKateeb2016Cyclotomic,
+  title  = {Structures and Properties of Cyclotomic Polynomials},
+  author = {Al-Kateeb, Ala'a Qasem Mohammad},
+  year   = {2016},
+  date   = {2016-03-21},
+  school = {North Carolina State University},
+  note   = {Ph.D. dissertation}
+}
+
 % informational secure multi server PIR
 @misc{Ghoshal2024,
   author       = {Ashrujit Ghoshal and Baitian Li and Yaohua Ma and Chenxin Dai and Elaine Shi},
@@ -208,6 +252,7 @@
   pages   = {302–341}
 }
 
+%T-Respier: AES under 1 sec
 @misc{TRespier2025,
   author       = {Sonia Belaïd and Nicolas Bon and Aymen Boudguiga and Renaud Sirdey and Daphné Trama and Nicolas Ye},
   title        = {Further Improvements in {AES} Execution over {TFHE}: Towards Breaking the 1 sec Barrier},
@@ -267,4 +312,32 @@
   howpublished = {Cryptology {ePrint} Archive, Paper 2022/1401},
   year         = {2022},
   url          = {https://eprint.iacr.org/2022/1401}
+}
+
+%Hardness of LWE and RLWE survey
+@misc{Balbas2021,
+  author       = {David Balbás},
+  title        = {The Hardness of {LWE} and Ring-{LWE}: A Survey},
+  howpublished = {Cryptology {ePrint} Archive, Paper 2021/1358},
+  year         = {2021},
+  url          = {https://eprint.iacr.org/2021/1358}
+}
+
+%CLPX efficient boothstraping
+@misc{Jeahyunk2025,
+  author       = {Jaehyung Kim},
+  title        = {Bootstrapping {GBFV} with {CKKS}},
+  howpublished = {Cryptology {ePrint} Archive, Paper 2025/888},
+  year         = {2025},
+  url          = {https://eprint.iacr.org/2025/888}
+}
+
+%Slot to Coefficient BGV and BFV
+@misc{Geelen2024SlotsToCoefficients,
+  author       = {Robin Geelen},
+  title        = {Revisiting the Slot-to-Coefficient Transformation for {BGV} and {BFV}},
+  howpublished = {Cryptology {ePrint} Archive, Paper 2024/153},
+  year         = {2024},
+  doi          = {10.62056/a01zogy4e-},
+  url          = {https://eprint.iacr.org/2024/153}
 }

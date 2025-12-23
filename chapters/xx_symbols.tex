@@ -1,0 +1,26 @@
+\section*{Symbols}
+\begin{flushleft}
+  \renewcommand{\arraystretch}{1.1}
+  \begin{tabularx}{\textwidth}{@{}p{18mm}X@{}}
+    $\Phi_m(x)$  & $m$-th cyclotomic polynomial (degree $\varphi(m)$) \\
+    $\varphi(m)$ & Euler's totient function \\
+    $\omega_m$   & Primitive $m$-th root of unity \\
+    $\mathbb{Z}_m^\times$ & Units modulo $m$ (indices in $\Phi_m$ product) \\
+    $\mathcal{R}$ & Cyclotomic ring $\mathbb{Z}[x]/(\Phi_m(x))$ \\
+    $t,\; t(x)$  & Plaintext modulus: integer (BFV) or polynomial (CLPX/GBFV) \\
+    $q$           & Ciphertext modulus \\
+    $\Delta$     & Scaling factor $q/t$ (or $q/t(x)$) \\
+    $m$           & Codeword length in PIRANA; also cyclotomic index when clear \\
+    $k$           & Hamming weight of a codeword (PIRANA) \\
+    $r$           & Slots per ciphertext (rows in PIR matrix) \\
+    $c$           & Database columns $= n/r$ (PIRANA) \\
+    $a_i$         & Uniform LWE/RLWE sample coefficient in $\mathbb{Z}_q$ \\
+    $s_i,\; s$   & Secret key coefficient / polynomial \\
+    $e$           & Error term sampled from $\chi_{\text{err}}$ \\
+    $m$       & Message polynomial/plaintext element \\
+    $\mathbf{ct}$ & Ciphertext pair $(c_0, c_1) \in \mathcal{R}_q^2$ \\
+    $p_{\text{mod}}$ & Prime used to set plaintext modulus in implementations \\
+    $\tau(x)$    & Factor of $t(x)$ used to define SIMD slot decomposition \\
+    $b$           & LWE second component $b = \mathbf{a}\cdot\mathbf{s} + e + \Delta m$ \\
+  \end{tabularx}
+\end{flushleft}

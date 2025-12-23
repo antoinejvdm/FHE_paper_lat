@@ -1,0 +1,61 @@
+\begin{figure}[tbp]
+    \centering
+    \setmsckeyword{}
+    \setmscscale{0.8}
+    \setlength{\leftnamedist}{4cm}
+    \drawframe{no}
+    \begin{msc}{}
+        \setlength{\instdist}{2.5cm}
+        \declinst{client}{}{Client}
+        \declinst{server_1}{Server 1}{$D$}
+        \declinst{server_2}{Server 2}{$D$}
+
+        \action*{%
+        \begin{minipage}{5cm} \centering
+        Samples a random vector\\[2mm]
+        \begin{tabular}{r@{ }c@{ }l}
+        $q_1$ & $=$ & $[\, q_{11},\, q_{12},\, q_{13},\, q_{14} \,]$ \\
+        $q_2$ & $=$ & $q_1 \oplus e_3$
+        \end{tabular}
+        where $e_3 = [\, 0,\, 0,\, 1,\, 0 \,]$
+        \end{minipage}%
+        }{client}
+        \nextlevel[7]
+
+        \mess[above left]{Send $q_1$}{client}{server_1}
+        \nextlevel[2]
+
+        \mess[above left]{Send $q_2$}{client}{server_2}
+        \nextlevel
+
+        \action*{
+        \begin{minipage}{3.5cm}\centering 
+        $a_1 = \bigoplus_{j=1}^{4} (q_{1j} \cdot b_j)$ \\
+        \end{minipage}
+        }{server_1}
+
+        \action*{
+        \begin{minipage}{3.5cm}\centering 
+        $a_2 = \bigoplus_{j=1}^{4} (q_{2j} \cdot b_j)$ \\
+        \end{minipage}
+        }{server_2}
+
+        \nextlevel[4]
+        \mess[above right]{Send $a_1$}{server_1}{client}
+
+        \nextlevel[2]
+        \mess[above right]{Send $a_2$}{server_2}{client}
+
+        \nextlevel[2]
+        \action*{%
+        \begin{minipage}{3cm}\centering 
+        XOR the replies\\
+        $a_1 \oplus a_2 = b_3$ \\
+        \end{minipage}%
+        }{client}
+
+        \nextlevel[3]
+    \end{msc}
+    \caption{Multi-server PIR protocol example}
+    \label{fig:multiserver_pir}
+\end{figure}

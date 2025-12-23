@@ -1,14 +1,13 @@
 \chapter{PIR implementation}
-\label{cha:3}
+\label{cha:PIR_implementation}
 
 
 \section{GBFV-PIRANA, single-query small payload}
-In this section, the implementation of the PIRANA protocol using the easy-GBFV library is presented. The implementation is a single-query implementation for small payloads. This means that the elements of the database are smaller when compared to the plaintext modulus $p$. To test the implementation, client and server are created in the same file. Therefore, there is no need to send the public key from client to server. The single-query small payload implementation can be found in the \verb|examples\5_GBFV_PIRANA_Spayload| folder of the thesis github \footnote{\textcolor{red}{github implementation of antoine}}. 
+In this section, the implementation of the PIRANA protocol using the easy-GBFV library is presented. The implementation is a single-query implementation for small payloads. This means that the elements of the database are smaller when compared to the plaintext modulus $p$. The single-query small payload implementation can be found in the \verb|examples\5_GBFV_PIRANA_Spayload| folder of the thesis github \footnote{\textcolor{red}{github implementation of antoine}}. 
 
 First, a database/matrix is created with size $r \cdot c$, where $r$ is equal to the number of slots in the ciphertext and $c$ is equal to the amount of elements divided by the number of slots in the ciphertext \footnote{When working with small payloads, all elements in the database are of maximal size i32 or plaintext modulo.}. All indices of the columns of the matrix are substituted with a constant weight codeword. To achieve this, $m$ and $k$ have to be chosen properly. In this implementation, $k$ will be set to 2, meaning that every codeword has a Hamming weight of 2. This will keep the amount of ciphertext-ciphertext multiplications low. Knowing $k$, $m$ can be calculated as $c \leq \binom{m}{2}$, with $c$ the amount of columns in the matrix. Later, every column will be multiplied with a ciphertext. Therefore, the plaintext elements of one column are set into a plaintext ring.
 
-Subsequently, an instance of GBFV is created. When creating this instance, one has to set several attributes. One has to choose $m1$ in such a way that $m$, the cyclotomic order, can be divided by $m1$, to create the number of slots $m2$. A second attribute is $log2(N)$, which will determine the cyclotomic order $m$ as $m = 2^{log2(N)+1}$. \textcolor{red}{ A prime number $p_{mod}$ is a prime which will determine the plaintext modulus.} Attribute $t$, which is the plaintext modulus, also has to be set. In our case, we use BGFV, so $t$ is a polynomial. 
-After creating the GBFV instance, the slot\_ring() function will create a slot representation. 
+Subsequently, an instance of GBFV is created. When creating this instance, one has to set $m$ the cyclotomic order, $p_mod$ the integer modulus and $t$ the plaintext modulus. EasyGBFV has some GBFV parameters already set, to create GBFV instances of 16/32/64 bits of plaintext modulus. 
 
 Having a database and having created a GBFV instance, the PIRANA set-up is finished. The client can now create a query for an element in the database. Imagine the client wants to retrieve element ($i,j$) from the database. First, the client will look up which codeword corresponds to column $j$. The client will create the query matrix, which is a matrix of size $r \cdot m$. This matrix is an all-zero matrix, except for the $i$-th row, which is subsituted with the codeword. 
 
@@ -21,7 +20,7 @@ The client will receive the ciphertext from the server and will decrypt using hi
 
 
 \section{GBFV-PIRANA, single-query large payload}
-In this section, the implementation of a single-query PIR protocol for large payloads using the easy-GBFV library is presented. The implementation can be found in the \verb|examples\5_GBFV_PIR_Lpayload| folder of the thesis github \footnote{\textcolor{red}{github implementation of antoine}}.
+In this section, the implementation of a single-query PIR protocol for large payloads using the easy-GBFV library is presented. The implementation can be found in the \verb|examples\5_GBFV_PIR_Lpayload| folder of the thesis github.
 
 % To create the database, some specific help functions are used\footnote{All of the helper functions are in \verb|examples\\6_GBFV_PIR_Lpayload\\matrix_util|}:
 
@@ -35,7 +34,7 @@ In this section, the implementation of a single-query PIR protocol for large pay
         \label{eq:chunk_estimator}
     \end{equation}
     \item base\_p\_decompose(n,p, chunks): This function will do a base-p decomposition of a big integer $n$ into $chunks$ amount of chunks. Euclidian division of the integer $n$ by the plaintext modulus $p$ is used. The division will be done $chunks$ amount of times, and every chunk will keep the remainder of the division. This will create a vector of size $chunks$, containing numbers smaller than $p$.
-    \item recompose\_base\_p\_to\_str(digits, p): This function will recompose the chunks back into one large integer. It will take the vector of chunks and the plaintext modulus $p$. The recomposition is done by multiplying every chunk with $p^i$, with $i$ the index of the chunk in the vector. The results are summed together to create one large integer, which is then converted to a string and returned.
+    \item \verb|recompose_base_p_to_str(digits, p)|: This function will recompose the chunks back into one large integer. It will take the vector of chunks and the plaintext modulus $p$. The recomposition is done by multiplying every chunk with $p^i$, with $i$ the index of the chunk in the vector. The results are summed together to create one large integer, which is then converted to a string and returned.
     \begin{equation}
         n = \sum_{i=0}^{chunks-1} digits[i] \cdot p^i
     \end{equation}

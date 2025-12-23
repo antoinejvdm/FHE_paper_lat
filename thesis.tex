@@ -1,15 +1,16 @@
-\documentclass[master=eelt,masteroption=ec]{kulemt-tex/kulemt}
+\documentclass[master=mcs]{kulemt-tex/kulemt}
 \setup{
   title={PIRANA implementation using GBFV},
-  author={Antoine Janssens van der Maelen},
-  promotor={Prof.\,dr. F. Vercauteren},
-  assessor={Ir.\,Kn. Owsmuch\and K. Nowsrest},
-  assistant={Ir.\ An~Assistent \and A.~Friend}}
+  author={Ing. Antoine Janssens van der Maelen},
+  promotor={Prof.\,Dr. Ir. F. Vercauteren},
+  assessor={placeholder},
+  assistant={Dr. Ir. R.~Geelen \and Dr. J.~Kang \and Ir. J.~Spiessens},}
+
 % Remove the "%" on the next line for generating the cover page
-%\setup{coverpageonly}
+% \setup{coverpageonly}
 % Remove the "%" before the next "\setup" to generate only the first pages
 % (e.g., if you are a Word user).
-%\setup{frontpagesonly}
+% \setup{frontpagesonly}
 
 % If you want to include other LaTeX packages, do it here. 
 
@@ -20,6 +21,10 @@
 \usepackage{caption}
 \usepackage{amssymb} 
 \usepackage{enumitem}
+\usepackage{msc} % Message Sequence Charts to make the protocle diagrams
+\usepackage{tikz} % To draw figures
+\usepackage{multirow} % For multirow in tables
+% \usepackage{adjustbox} % To resize tables
 
 %%%%%%%
 % The lipsum package is used to generate random text.
@@ -52,42 +57,24 @@
 % The list of symbols is also optional.
 % This list must be created manually, e.g., as follows:
 \chapter{List of Abbreviations and Symbols}
-\section*{Abbreviations}
-\begin{flushleft}
-  \renewcommand{\arraystretch}{1.1}
-  \begin{tabularx}{\textwidth}{@{}p{12mm}X@{}}
-    LoG   & Laplacian-of-Gaussian \\
-    MSE   & Mean Square error \\
-    PSNR  & Peak Signal-to-Noise ratio \\
-  \end{tabularx}
-\end{flushleft}
-\section*{Symbols}
-\begin{flushleft}
-  \renewcommand{\arraystretch}{1.1}
-  \begin{tabularx}{\textwidth}{@{}p{12mm}X@{}}
-    $c$   & Speed of light \\
-    $E$   & Energy \\
-    $m$   & Mass \\
-    $\pi$ & The number pi \\
-  \end{tabularx}
-\end{flushleft}
+\input{chapters/xx_abbreviations}
+\input{chapters/xx_symbols}
 
 % Now comes the main text
 \mainmatter
 
-\include{chapters/1_intro}
+% \include{chapters/1_intro}
 \include{chapters/2_theoretical_background}
-\include{chapters/3_chapter}
-% ... and so on until
-\include{chapters/n_chapter}
-\include{chapters/n_conclusion}
+\include{chapters/3_PIR_implementation}
+% \include{chapters/n_chapter}
+% \include{chapters/n_conclusion}
 
-% If you have appendices:
-\appendixpage*          % if wanted
-\appendix
-\include{appendixes/appendix-1}
-% ... and so on until
-\include{appendixes/appendix-n}
+% % If you have appendices:
+% \appendixpage*          % if wanted
+% \appendix
+% \include{appendixes/appendix-1}
+% % ... and so on until
+% \include{appendixes/appendix-n}
 
 \backmatter
 % The bibliography comes after the appendices.
