@@ -3,11 +3,11 @@
 
 
 \section{GBFV-PIRANA, single-query small payload}
-In this section, the implementation of the PIRANA protocol using the easy-GBFV library is presented. The implementation is a single-query implementation for small payloads. This means that the elements of the database are smaller when compared to the plaintext modulus $p$. The single-query small payload implementation can be found in the \verb|examples\5_GBFV_PIRANA_Spayload| folder of the thesis github \footnote{\textcolor{red}{github implementation of antoine}}. 
+In this section, the implementation of the PIRANA protocol using the easy-GBFV library is presented. The implementation is a single-query implementation for small payloads. This means that the elements of the database are smaller when compared to the plaintext modulus $p$. The single-query small payload implementation can be found in the \verb|examples\5_GBFV_PIRANA_Spayload| folder of the thesis github\footnote{\url{https://github.com/antoinejvdm/easygbfv_PIR}}. 
 
-First, a database/matrix is created with size $r \cdot c$, where $r$ is equal to the number of slots in the ciphertext and $c$ is equal to the amount of elements divided by the number of slots in the ciphertext \footnote{When working with small payloads, all elements in the database are of maximal size i32 or plaintext modulo.}. All indices of the columns of the matrix are substituted with a constant weight codeword. To achieve this, $m$ and $k$ have to be chosen properly. In this implementation, $k$ will be set to 2, meaning that every codeword has a Hamming weight of 2. This will keep the amount of ciphertext-ciphertext multiplications low. Knowing $k$, $m$ can be calculated as $c \leq \binom{m}{2}$, with $c$ the amount of columns in the matrix. Later, every column will be multiplied with a ciphertext. Therefore, the plaintext elements of one column are set into a plaintext ring.
+First, a database/matrix is created with size $r \cdot c$, where $r$ is equal to the number of slots in the ciphertext and $c$ is equal to the amount of elements divided by the number of slots in the ciphertext\footnote{When working with small payloads, all elements in the database are of maximal size i32 or plaintext modulo.}. All indices of the columns of the matrix are substituted with a constant weight codeword. To achieve this, $m$ and $k$ have to be chosen properly. In this implementation, $k$ will be set to 2, meaning that every codeword has a Hamming weight of 2. This will keep the amount of ciphertext-ciphertext multiplications low. Knowing $k$, $m$ can be calculated as $c \leq \binom{m}{2}$, with $c$ the amount of columns in the matrix. Later, every column will be multiplied with a ciphertext. Therefore, the plaintext elements of one column are set into a plaintext ring.
 
-Subsequently, an instance of GBFV is created. When creating this instance, one has to set $m$ the cyclotomic order, $p_mod$ the integer modulus and $t$ the plaintext modulus. EasyGBFV has some GBFV parameters already set, to create GBFV instances of 16/32/64 bits of plaintext modulus. 
+Subsequently, an instance of GBFV is created. When creating this instance, one has to set $m$ the cyclotomic order, $p$ the integer modulus and $t$ the plaintext modulus. EasyGBFV has some GBFV parameters already set, to create GBFV instances of 16/32/64 bits of plaintext modulus. 
 
 Having a database and having created a GBFV instance, the PIRANA set-up is finished. The client can now create a query for an element in the database. Imagine the client wants to retrieve element ($i,j$) from the database. First, the client will look up which codeword corresponds to column $j$. The client will create the query matrix, which is a matrix of size $r \cdot m$. This matrix is an all-zero matrix, except for the $i$-th row, which is subsituted with the codeword. 
 
@@ -26,19 +26,109 @@ In this section, the implementation of a single-query PIR protocol for large pay
 
 
 \begin{itemize}
-    \item d3\_finder(element\_size\_bit: usize, p\_mod: \&str): This function will determine in how many chunks a large payload can be split. It will return the amount of chunks. To achieve this, the function needs to know the \textcolor{red}{plaintext modulus p\_mod} and the maximal size of an element in the database (in bits). 
+    \item \verb|d3_finder(element_size_bit: usize, p_mod: &str)|: This function will determine in how many chunks a large payload can be split. It will return the amount of chunks. To achieve this, the function needs to know the integer modulus \texttt{p\_mod} and the maximal size of an element in the database (in bits). 
     
     Equation \ref{eq:chunk_estimator} shows how the number of chunks are calculated. 
     \begin{equation}
-        number of chunks = \left \lceil \frac{element\_size\_bit}{\lfloor log_2(p\_mod) \rfloor} \right \rceil
+        \text{number of chunks} = \left \lceil \frac{\texttt{element\_size\_bit}}{\lfloor log_2(\texttt{p\_mod}) \rfloor} \right \rceil
         \label{eq:chunk_estimator}
     \end{equation}
-    \item base\_p\_decompose(n,p, chunks): This function will do a base-p decomposition of a big integer $n$ into $chunks$ amount of chunks. Euclidian division of the integer $n$ by the plaintext modulus $p$ is used. The division will be done $chunks$ amount of times, and every chunk will keep the remainder of the division. This will create a vector of size $chunks$, containing numbers smaller than $p$.
+    \item \verb|base_p_decompose(n,p, chunks)|: This function will do a base-p decomposition of a big integer $n$ into chunks. Euclidian division of the integer $n$ by the plaintext modulus $p$ is used. The division will be done $chunks$ amount of times, and every chunk will keep the remainder of the division. This will create a vector of size $chunks$, containing numbers smaller than $p$.
     \item \verb|recompose_base_p_to_str(digits, p)|: This function will recompose the chunks back into one large integer. It will take the vector of chunks and the plaintext modulus $p$. The recomposition is done by multiplying every chunk with $p^i$, with $i$ the index of the chunk in the vector. The results are summed together to create one large integer, which is then converted to a string and returned.
     \begin{equation}
         n = \sum_{i=0}^{chunks-1} digits[i] \cdot p^i
     \end{equation}
-    \item \verb|get_rand_matrix(nr_elements, element_size_bits, nr_slots, p)|: To create the database, this function is used. It will create a 3D-matrix with size $r \cdot c \cdot d3$, with $r$ the number of slots in a ciphertext, $c$ the number of elements divided by the number of slots, and $d3$ the amount of chunks needed to split one large element. Every element in the database is a large integer with size equal to $element\_size\_bits$. Every large integer is split into $d3$ chunks via base-p decomposition. This function will return the 3D-matrix.
+    \item \verb|get_rand_matrix(nr_elements, element_size_bits, nr_slots, p)|: To create the database, this function is used. It will create a 3D-matrix with size $r \times t \times chunks$, with $r$ the number of slots in a ciphertext, $c$ the number of elements divided by the number of slots, and $d3$ the amount of chunks needed to split one large element. Every element in the database is a large integer with size equal to $element\_size\_bits$. Every large integer is split into $d3$ chunks via base-p decomposition. This function will return the 3D-matrix.
     % To increase the performance, one can already shift the elements of the next chunks. This will allow to avoid the rotate-operation when the server is computing, to fit multiple chunks in one ciphertext.  
 \end{itemize}
+
+\section{GBFV one-hot encoding}
+As shown in the PIRANA paper \cite{PIRANA2023}, PIRANA is slower when compared to most other PIR protocols when querying one element. PIRANA becomes more competititive when querying multiple elements at once. Therefore, using the PIRANA protocol to get one element is suboptimal. An alternative way to retrieve one element from a database is to use one-hot encoding.
+Instead of sending a query matrix, as in PIRANA, with one-hot encoding only two vectors are sent. Both vectors are all-zero vectors, except at position $i$ for the first vector (row vector) and at position $j$ for the second vector (column vector). When using small elements, the database in one-hot encoding has to be structured in a 2D-matrix. The first dimension equals the number of slots, while the second dimension equals $t$, where $t = \frac{n}{s}$ with $n$ the amount of elements in the database and $s$ the number of slots in a ciphertext. Algorithm \ref{al:OH_client} shows the query generation for large or small payloads. The matrx multiplication used in \ref{al:OH_server} needs a vector of length equal to a multiple of the number of slots. Therefore, padding might be needed, when the amount of columns is not a multiple of the number of slots.
+
+% one hot encoding query generation
+\begin{algorithm}
+\label{al:OH_client}
+\caption{One-hot query generation}
+\begin{algorithmic}[1] % [1] adds line numbers
+
+\State $columns \gets \frac{elements}{slots}$ 
+
+\If{$columns \bmod slots \neq 0$}
+    \State $padded\_columns \gets columns + (slots - (columns \bmod slots))$
+\EndIf
+
+\vspace{0.3em}
+
+\State $j \in \{0, \dots, columns - 1\}$
+\State $i \in \{0, \dots, slots - 1\}$
+
+\vspace{0.3em}
+
+\State $col\_selector \gets$ array of zeros of length $padded\_columns$
+\State $elem\_selector \gets$ array of zeros of length $slots$
+\State $col\_selector[j] \gets 1$
+\State $elem\_selector[i] \gets 1$
+
+\vspace{0.3em}
+
+\State $row\_selector\_slots \gets \texttt{GenFromI32}(slotring, elem\_selector)$
+\State $col\_selector\_slots \gets \texttt{GenFromI32}(slotring, col\_selector)$
+
+\end{algorithmic}
+\end{algorithm}
+The two query vectors are encrypted and sent to the server. The server will perform a matrix multiplication between the column vector and the database, resulting in a ciphertext containing only the $j$-th column of the database. This ciphertext is then multiplied with the row vector, resulting in a ciphertext containing only the desired element. This ciphertext is sent back to the client, who can decrypt and retrieve the desired element. When handling large elements, the database is set up as a 3D-matrix, where the third dimension equals the amount of chunks needed to split one large element. The server will need to perform the matrix multiplication for every chunk, resulting in multiple ciphertexts. Algorithm \ref{al:OH_server} shows the server-side operations for both large payloads. The function \texttt{GenFromBigInt} will take a vector of big integer elements and generates a slotted plaintext, where every slot equals one value of the passed vector. It takes the argument $slotring$, which is the ring in which the slotted plaintext lives in, and a vector of big integers as a second argument. \texttt{DenseMatrixMul} is a function that takes a flattened 2D-matrix, where elements at position $(i,j)$ are stored at index $i \cdot columns + j$ of the flattened array. \texttt{HomMatMul} is the multiplication of the 2D-matrix, or one chunck of the 3D-matrix for large payloads, with the ciphertext column selector.
+% one hot encoding server side
+\begin{algorithm}
+\caption{One-hot encoding search algorithm}
+\label{al:OH_server}
+\begin{algorithmic}[1]
+\State $nrChunks \gets$ number of chunks per element
+\For{$ch = 0$ \textbf{to} $numChunks-1$}
+
+    \State $layer \gets$ empty 2D array with capacity $numChunks \times slots$
+    \State $colInChunk \gets$ number of columns in one $ch$ of the matrix
+
+    \For{$r = 0$ \textbf{to} $slots-1$}
+        \State $rowVals \gets$ empty array of length $paddedColumns$ 
+
+        \For{$c = 0$ \textbf{to} $paddedColumns-1$}
+            \If{$c < colInChunk$}
+                \State Append $matrix[ch][r][c]$ to $rowVals$
+            \Else
+                \State Append $0$ (zero element in ring) to $rowVals$
+            \EndIf
+        \EndFor
+
+        \State $slotsRow \gets \textsc{GenFromBigInt}(slotring, rowVals)$ %slotring is the plaintext slot ring of GBFV}
+        \State Append $slotsRow$ to $layer$
+    \EndFor
+
+    \State $data \gets$ empty array with capacity $slots \times paddedColumns \times paddedColumns$
+    \For{$rowIdx = 0$ \textbf{to} number of rows in $layer -1$}
+        \For{$colIdx = 0$ \textbf{to} $paddedColumns-1$}
+            \State Append $layer[rowIdx][colIdx]$ to $data$
+        \EndFor
+    \EndFor
+
+    \State $mm \gets \textsc{DenseMatrixMul}(slotring, padded\_columns, data)$
+
+    \State $ct\_col \gets \textsc{HomMatMul}(gbfv, mm, ct\_col\_select, pk)$
+
+    \State $ct\_chunk\_element \gets$ element-wise homomorphic multiplication of $ct\_col$ and $ct\_row\_select$ using $gbfv$
+
+    \State Append $ct\_chunk\_element$ to $ct\_elements$
+
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+A rotate-and-sum operation is performed to reduce the amount of ciphertexts sent back to the client. Communication cost can be reduced when using one-hot encoding instead of PIRANA, as discussed in Chapter \ref{cha:results}.
+
+
+
+
+
+ 
+
 

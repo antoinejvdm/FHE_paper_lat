@@ -1,25 +1,11 @@
 \chapter{Theoretical background}
 \label{cha:2}
-\section{Privacy enhancing technologies}
 
 \section{Homomorphic encryption}
+Homomorphic encryption (HE) allows computations to be performed on encrypted data without needing to decrypt. As discussed above, there are multiple types of HE: PHE which only supports multiplication or addition and LHE/FHE which supports both addition and multiplication.
 
-So far, encryption technologies are shown to be effective to protect data at rest and in transit. However, when data is used for computation, preserving privacy becomes more complex. To achieve this, several privacy-enhancing technologies (PETs) are available. One type of PET is homomorphic encryption (HE), which allows computation on encrypted data without decrypting. No party performing computations has access to the plaintext data, these data remain encrypted. Partially homomorphic encryption (PHE) is a type of HE that only supports homomorphic multiplication or addition, but not both. Full HE (FHE) and leveled HE (LHE) support both multiplications and additions, but with LHE only up to a limited computation depth. To enhance security, noise is added to the encrypted data when using HE, in the least significant bits as illustrated in Figure \ref{fig:ciphertext_HE}. However, when performing computations the noise can grow beyond the noise padding bits, eventually corrupting the data in SHE. To mitigate this, bootstrapping can be performed in FHE to reduce the amount of noise, thus allowing more computations to be done whilst maintaining data correctness. 
-
-\begin{figure}
-    \centering
-    \includegraphics[width=0.5\textwidth]{fig/Ciphertext_HE.png} 
-    \captionof{figure}{Ciphertext HE \cite{ilaria_chillotti_zama_tfhe_2022}}
-    \label{fig:ciphertext_HE}
-\end{figure}
-
-FHE offers strong advantages when compared to other PETs. For instance, less communication is needed during computation when compared to MPC (multi-party computation) and it has a better track record in terms of security vulnerability when compared to TEE (trusted execution environment). \cite{j_bouman_comparison_nodate}
-
-On the other hand, there are some disadvantages too. Like some other PETS, FHE requires specialized expertise to implement. But, most importantly, FHE is computationally intensive (thus slow) for large and unstructured data. According to Ulf Mattsson, general FHE
-processing is 1,000 to 1,000,000 times slower than equivalent plaintext operations. \cite{corporation_security_2025} 
-
-Whilst performing a large number of (complex) operations, noise added to the HE ciphertext will grow and overwrite data. To avoid this, two methods are used: using big integers as ciphertext modulus and bootstrapping. By using big integers as ciphertext modulus, enough space is provided for the noise to grow for the full computation - the so-called leveled schemes. \footnote{BFV and CKKS are often implemented without bootstrapping, as a leveled scheme, but are bootstrappable.}
-To have more computation depth possible, bootstrapping operations are performed to reduce the amount of noise in between chains of computations. One should note that bootstrapping is computationally and memory-intensive.  
+Whilst performing a large number of (complex) operations, noise added to the HE ciphertext will grow and overwrite data. To avoid this, two methods are used: using big integers as ciphertext modulus and bootstrapping. By using big integers as ciphertext modulus, enough space is provided for the noise to grow for the full computation - the so-called leveled schemes (LHE)\footnote{BFV and CKKS are often implemented without bootstrapping, as a leveled scheme, but are bootstrappable.}.
+To have more computation depth possible (FHE), bootstrapping operations are performed to reduce the amount of noise in between chains of computations. One should note that bootstrapping is computationally and memory-intensive.  
 
 FHE schemes can be divided into multiple generations, depending on the type of bootstrapping techniques \cite{robin_bootstraping_BGV_BFV}.
 First generation schemes include schemes like the Gen09 bootstrapping technique, described in 2009, which is illustrated in Figure \ref{fig:boot09} \cite{ilaria_chillotti_zama_tfhe_2022}. FHE-encrypted data are FHE-encrypted a second time, with a lower level of noise compared to the initial encryption. Subsequently a bootstrapping key is sent to the computing node, which is the secret key of the initial encryption, encrypted with the public key of the second encryption. Decryption with this bootstrapping key removes the first encryption layer, and one ends up with data solely encrypted via the second FHE-scheme, with a lower level of noise. This type of scheme is no longer used in practical implementations.
@@ -74,18 +60,28 @@ m \approx \frac{b - \mathbf{a} \cdot \mathbf{s}}{\Delta}
   \item $\Delta$ is the message scaling factor
   \item $b \in \mathbb{Z}_q$ is the second component of the ciphertext
 \end{itemize}
-This scheme already allows to do some operations on the ciphertext: we can add two ciphertexts and perform multiplications of the ciphertext with non-encrypted integers.\footnote{An operation on ciphertexts will, in FHE, correspond to an operation on plaintexts.}
+This scheme already allows to do some operations on the ciphertext: we can add two ciphertexts and perform multiplications of the ciphertext with non-encrypted integers\footnote{An operation on ciphertexts will, in FHE, correspond to an operation on plaintexts.}.
 
 
-\subsection{RLWE} Ring LWE is similar to LWE but the message, secret key, random values and error are all polynomials in the cyclotomic ring $\mathcal{R}_q=\mathbb{Z}_q[x]/(f(x))$ rather than vectors over integers. Ciphertexts are constructed using polynomuial arithmetic modulo a cyclotomic polynomial.  
+\subsection{RLWE} Ring LWE is similar to LWE but the message, secret key, random values and error are all polynomials in the cyclotomic ring $\mathcal{R}_q=\mathbb{Z}_q[x]/(f(x))$ rather than vectors over integers. Ciphertexts are constructed using polynomial arithmetic modulo a cyclotomic polynomial.  
 When encrypting, we will normalize the message and add a Gaussian error, like in LWE. For every coefficient of the polynomial, the value of $\Delta$ $s$ plus the error will again be represented on a ring. Rounding will give the polynomial coefficients of the message $m$. 
 The RLWE scheme allows to perform additions between ciphertexts and multiplication with non-encrypted constant polynomial functions.
 
-\textcolor{red}{XXXXXXXXXXXXXXXXXXX}The RLWE problem is based on the RLWE distribution for integers $q\ge2$ and a secret s sampled from $\chi_{key}$. 
-The decision RLWE problem is, given many plaintext-ciphertext samples, to decide whether the samples come from a uniform random distribution or from the RLWE distribution. When solving the search RLWE problem, many plaintext-ciphertexts pairs are given from the RLWE distribution, and one needs to find the secret s. Both variants are supposed to be hard\cite{Balbas2021}. 
+The RLWE distribution consists of pairs $(a, b) \in \mathcal{R}_q \times \mathcal{R}_q$, where $a$ is chosen uniformly at random from $\mathcal{R}_q$ and $b = a \cdot s + e$, with $e$ and $s$ sampled at random over $\mathcal{R}_q$.
+
+There exist two variants of the RLWE-problem, search RLWE and decision RLWE.
+
+\textit{\textbf{Search RLWE:} Let $\mathcal{R}$ be an RLWE instance. The search RLWE problem, denoted by SRLWE($\mathcal{R}$), is to discover s given access to arbitrarily many independent samples $(a, b)$.}
+
+\textit{\textbf{Decision RLWE:} Let $\mathcal{R}$ be an RLWE instance. The decision RLWE problem, denoted
+by DRLWE($\mathcal{R}$), is to distinguish between the same number of independent samples in two distributions
+on $\mathcal{R}_q \times \mathcal{R}_q$. The first is the RLWE distribution of $\mathcal{R}$, and the second consists of uniformly random and
+independent samples from $\mathcal{R}_q \times \mathcal{R}_q$.}
+
+Both variants are supposed to be hard\cite{Balbas2021}. Note that the search RLWE problem can be reduced to the decision RLWE problem \cite{Hao2015RLWEreduction}.
 
 \section{BFV and CLPX}
-In BFV by Kim et al.\cite{BFVrounding_Kim, Brakerski2012, Fan2012}, a subquotientring $\mathcal{R}_t$ of $\mathcal{R}$ is ceated by taking modulo t the ring $\mathcal{R}$. In the case of BFV, we fix this $t$ to a prime integer $p$. The ciphertext also has a modulus q and the message is scaled by a factor $\delta = q/t$.
+In BFV by Kim et al.\cite{BFVrounding_Kim, Brakerski2012, Fan2012}, a subquotientring $\mathcal{R}_t$ of $\mathcal{R}$ is created by taking modulo t the ring $\mathcal{R}$. In the case of BFV, we fix this $t$ to a prime integer $p$. The ciphertext also has a modulus q and the message is scaled by a factor $\delta = q/t$.
 The plaintext space corresponds to $R_t = \mathbb{Z}[x]/(\Phi_m(x), p)$.
 Encryption is then done via following formula:
 \begin{align}
@@ -173,7 +169,7 @@ SIMD allows to perform following operations such as:
     \item Slot rotations: shifting slots in the plaintext/ciphertext. The shifting is performed different in BFV and GBFV. In BFV, the slots are usually structured in a 2D-hypercube, so rotations can be performed along the two dimensions. In GBFV, the slots are structured as a 1D-array, so rotation is a slot-shift along the axis. 
 \end{itemize}
 
-BFV can support packing in slots and thus SIMD operations. However, doing this puts a restriction on the use of BFV. If $p = \phi_m(b)$ is the modulus of the plaintext, the upper bound of the output noise will grow proportional to the product of this factor and the sum of the upper bounds on the input noise. When one wants to have a high precision arithmetic, one chooses a high $p$, which will result in more output noise. This makes BFV SIMD-schemes impractical when performing precise arithmetic calculations, often needed in HE-applications. For instance, privacy-preserving machine learning \cite{Giland_ML_big_P} uses moduli up to 80 bits. Also, a higher value of $p$ enables a higher packing density \cite{Geelen2024FHECyclotomic}. The packing density, which is equal to the number of slots divided by the ring dimension, is equal to 1/$d$. $d$ is the multiplicative order of $p$ modulo the cyclotomix index $m$. To achieve full packing, $p$ needs to be larger than $m$. When using power-of-two cyclotomics, the number of slots will be upper bounded by ($p$+1)/2 \cite{Geelen2024SlotsToCoefficients}. To conclude, while a large value of $p$ allows for greater packing density and more precise arithmetic operations, it simultaneously exacerbates noise growth.
+BFV can support packing in slots and thus SIMD operations. However, doing this puts a restriction on the use of BFV. If $p = \Phi_m(b)$ is the modulus of the plaintext, the upper bound of the output noise will grow proportional to the product of this factor and the sum of the upper bounds on the input noise. When one wants to have a high precision arithmetic, one chooses a high $p$, which will result in more output noise. This makes BFV SIMD-schemes impractical when performing precise arithmetic calculations, often needed in HE-applications. For instance, privacy-preserving machine learning \cite{Giland_ML_big_P} uses moduli up to 80 bits. Also, a higher value of $p$ enables a higher packing density \cite{Geelen2024FHECyclotomic}. The packing density, which is equal to the number of slots divided by the ring dimension, is equal to 1/$d$. $d$ is the multiplicative order of $p$ modulo the cyclotomix index $m$. To achieve full packing, $p$ needs to be larger than $m$. When using power-of-two cyclotomics, the number of slots will be upper bounded by ($p$+1)/2 \cite{Geelen2024SlotsToCoefficients}. To conclude, while a large value of $p$ allows for greater packing density and more precise arithmetic operations, it simultaneously exacerbates noise growth.
 
 GBFV works modulo a plaintext modulus polynomial $t(x)$, hereby defining a plaintext ring $\mathcal{R}_t = \mathcal{R}/(t(x))$. To enable SIMD computation we want this plaintext space to be isomorphic to a product of fields. By the Chinese Remainder Theorema, this decomposition in fields allows a plaintext to be represented as a number of slots, so SIMD operations are also possible when using GBFV. Homomorphic operations will then be performed component-wise on these slots. This enables parallel computation and rotation of slots can be performed via automorphisms. 
 
@@ -188,7 +184,7 @@ PIR protocols can be categorized in two groups: single-server PIR and multi-serv
 The single-server PIR is the most straightforward setting: one server holds the full dataset, and the client queries the server to get the data of interest.
 In multi-server PIR, there are multiple servers holding a copy of the full dataset, and the client queries multiple servers to obtain the data of interest. The core idea when using multi-server PIR is that, although the dataset is replicated on multiple servers, the query is split into parts. In this way, none of the servers learn which bit is requested but the requested bit can be recovered from the results of the different servers. 
 
-A multi-server PIR scheme is demonstrated in figure \ref{fig:multiserver_pir}. Let D be the database with 4 bits $[b_1, b_2, b_3, b_4]$, and the client wants to retrieve bit \( b_3 \) privately. There are two non-colluding servers holding a copy of the database. The client will sample a random binary vector $q_1$ and will make $q_2$ by XORing $q_1$ withe a zero vector with a one at the position of the wanted element $e_3$. Subsequently both queries are sent to both servers. The servers compute $a_1$ and $a_2$, and return them to the client. Afther XORing both responses the client can retrieve $b_3$. Each server sees a random-looking query, so neither learns which index was requested as long as they do not collude.
+A multi-server PIR scheme is demonstrated in Figure \ref{fig:multiserver_pir}. Let D be the database with 4 bits $[b_1, b_2, b_3, b_4]$, and the client wants to retrieve bit \( b_3 \) privately. There are two non-colluding servers holding a copy of the database. The client will sample a random binary vector $q_1$ and will make $q_2$ by XORing $q_1$ withe a zero vector with a one at the position of the wanted element $e_3$. Subsequently both queries are sent to both servers. The servers compute $a_1$ and $a_2$, and return them to the client. Afther XORing both responses the client can retrieve $b_3$. Each server sees a random-looking query, so neither learns which index was requested as long as they do not collude.
 
 \input{fig/multi_server_PIR_example}
 
@@ -303,4 +299,4 @@ Spiessens created a wrapper called easy-GBFV, which will use the Fheanor library
 \end{itemize}
 
 
-    % add the parameters                                     
+    % add the parameters

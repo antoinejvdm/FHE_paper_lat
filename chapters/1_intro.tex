@@ -1,7 +1,116 @@
 \chapter{Introduction}
 \label{cha:intro}
-The first contains a general introduction to the work. The goals are
-defined and the modus operandi is explained.
 
-\section{Lorem Ipsum 4--5}
-\lipsum[4-5]
+\section{Privacy-enhancing/preserving technologies}
+
+In a world where AI becomes data-driven and in a world where people are getting more aware of how sensitive their data can be, protection of data is crucial. Some legislation sets up a framework to protect data, such as the General Data Protection Regulation (GDPR) for personal data. This requires companies and individuals to implement data protection technologies to ensure data privacy, security and compliance to the legislation. 
+
+So far, encryption technologies are shown to be effective to protect data at rest and in transit. However, when data is used for computation, preserving privacy becomes more complex. To achieve this, several privacy-enhancing or privacy-preserving technologies (PETs) are available. PETs are defined by the European Union Agency for Cybersecurity (ENISA) as "a coherent system of information and communication technology (ICT) measures that protect privacy by eliminating or reducing personal data or by preventing unnecessary and/or undesired processing of personal data, all without losing the functionality of the information system" \cite{EDPSGlossary}. 
+
+The least secure way to handle data used in computation is to compute in clear, on an unprotected
+device, since sensitive data can be seen by the computing party. If this party is malicious or if the
+data gets leaked, a malicious party could exploit it. To mitigate this risk, several different PETs can be used.
+\subsection{Confidential computing}
+A computer is built on different layers, going from the hardware layer at the bottom to the application
+layer on top. Traditionally privacy technologies aimed to defend the bottom layers, such as the
+operating system. However, with the widespread adoption of hosting and cloud services, there is a
+switch to protecting the application from the lower layers. In a normal use case, the application has
+to trust the layers underneath, such as the OS kernel and hypervisor layer. If an attacker or a bug is
+dissimilated in those lower layers, it is possible to attack the application. Therefore, enclaves are used
+in confidential computing, creating a trusted execution environment (TEE). Memory inside an enclave
+is encrypted and decrypted on the fly, inside the isolated enclave, only code running in the enclave is
+allowed to access the data. So, by essentially only trusting the enclave and the CPU, data in use is
+protected from the outside of the enclave. Even privileged software, for instance the operating system,
+cannot access the memory directly.
+The susceptibility to side-channel attacks limits the use of enclaves; for example information can be
+revealed from the way the TEE interacts with other parts of the system, thus potentially revealing
+what is happening inside the enclave \cite{EnclavesSCA2015}. A second limitation when using confidential computing is the
+fact one is trusting the cloud service provider or the specific computer system to properly set up and use the enclave, but this party can be untrustworthy. To mitigate this risk, attestation mechanisms
+can be employed to verify the trustworthiness of the provider or system.
+
+\subsection{Federated computation}
+Another way to protect data while being processed is to perform federated computation. Firstly, a
+local computation is performed which will hide information about the local database. Secondly, the
+different parties who did the local computation share their results with a central co¨ordinator. A second
+computation is performed on all data collected from the different parties, yielding the desired final
+output, without any party having to reveal its raw data.
+
+This approach however has some limitations. Federated computation is a relatively easy and efficient
+way to operate, but can become challenging when one wants to perform non-linear operations on the
+data that require intermediate sharing\footnote{Exchange of partial results or intermediate results during multi-step computations.} (e.g. high-order moments). An attacker can retrieve some
+information from the parties, as the first computation result (local computation by each party) is sent
+in clear to the co¨ordinator. Also, an attacker can use a combination of engineered queries to get some
+information about a certain subgroup of data or users (differential attack). To prevent this, one can
+add noise to the result of the local computation, to obtain differential privacy. However, adding too
+much noise will make the data useless. Also, outliers will increase the noise significantly which can
+detoriate the accuracy of the results. So, setting the right noise parameters is tricky and requires a
+certain amount of expertise.
+
+\subsection{Multi-party computation}
+Multi-party computation uses multiple computing parties, with no authority party. There is no computation
+on the original data, but data is first split up into shares and these shares are then distributed
+between the computing parties. These parties then perform computations using the shares they possess.
+The results of these computations are then combined together to find the result of the desired
+computation, on the original data.
+
+When one wants to compute non-linear functions, however, MPC becomes more challenging. To perform
+the computation there is a need for interaction between the parties, who need to exchange their
+shares between each other. This leaks information about the data. To solve this, for example, two random
+numbers can be chosen. These random numbers are used to mask the share, while reconstructing
+of the answer remains possible \cite{DeCoste2018}. A risk of MPC is collusion. If some of the parties collude, secret
+sharing amongst them can make it possible to reconstruct the original data. Additionally, MPC can
+bring along high communication overhead, leading to scalability issues.
+
+\subsection{Homomorphic encryption}
+Homomorphic encryption allows computation on encrypted data without decrypting. No party performing computations has access to the plaintext data, these data remain encrypted. Partially homomorphic encryption (PHE) is a type of HE that only supports homomorphic multiplication or addition, but not both. Full HE (FHE) and leveled HE (LHE) support both multiplications and additions, but with LHE only up to a limited computation depth. To enhance security, noise is added to the encrypted data when using HE, in the least significant bits as illustrated in Figure \ref{fig:ciphertext_HE}. However, when performing computations the noise can grow beyond the noise padding bits, eventually corrupting the data in LHE. To mitigate this, bootstrapping can be performed in FHE to reduce the amount of noise, thus allowing more computations to be done whilst maintaining data correctness. 
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig/Ciphertext_HE.png} 
+    \captionof{figure}{Ciphertext HE \cite{ilaria_chillotti_zama_tfhe_2022}}
+    \label{fig:ciphertext_HE}
+\end{figure}
+
+FHE is however computationally intensive (thus slow) for large and unstructured data. It also requires
+specialized expertise to implement. To address this, some organisations are supporting adoption (e.g.
+Google has released an open source compiler for FHE) \cite{Cowan2021}.
+
+\subsection{Comparison of PETs}
+As already mentioned, each PET has its strengths and flaws. Also, the suitability of a PET depends on the envisaged application. 
+
+With the rise of cloud computing, users realise their data in the cloud is at risk. As a result
+computing in clear, without any protection or encryption, will phase out. Federated computation
+seems useful when data is naturally distributed, for instance when training an AI model with data
+collected from different user devices. An important vulnerability however is the fact that data privacy
+is not guaranteed by itself, the exchanged model parameters can still leak information about the
+underlying data. Therefore, federated computation should be combined with other PETs to enhance the security of the underlying data.
+
+Multi-party computation is a good option to maintain privacy of information while computing, but
+inherently needs multiple devices each having a different authority. In MPC, sensitive information
+can be restored when parties collude. Although this risk can be lowered when devices are distributed
+under different authorities, this makes the implementation of MPC challenging, as finding nodes that
+will never collude is a difficult (impossible?) task. Therefore, there is still some risk the sensitive
+information leaks.
+
+Confidential computing is still evolving and manufacturers are using different approaches to implement
+enclaves, this technique offers a high level of protection by keeping data and
+code secure in an enclave. The enclave is made on a single machine, there is no need for multiple
+devices (in contrast to MPC, federated computation). Confidential computing already found ground in multiple applications, such as Nitro Enclaves at AWS and Intel SGX CPU's. 
+
+FHE offers strong advantages when compared to other PETs. If an implementation of FHE can be proven, we can be (mathematically) sure the data can not be decrypted while being processed. Also, less communication is needed during computation when compared to MPC (multi-party computation) and it has a better track record in terms of security vulnerability when compared to TEE (trusted execution environment). \cite{j_bouman_comparison_nodate}
+
+On the other hand, there are some disadvantages too. Like some other PETS, FHE requires specialized expertise to implement. But, most importantly, FHE is computationally intensive (thus slow) for large and unstructured data. According to Ulf Mattsson, general FHE
+processing is 1,000 to 1,000,000 times slower than equivalent plaintext operations. \cite{corporation_security_2025}.
+
+
+Enhancing the speed of FHE is an attractive research topic, as it would make FHE more suitable for real-world applications. Therefore, in this thesis, we focus on improving the performance of a private information retrieval (PIR) scheme based on FHE. 
+
+
+However, seeing every PET independent would be a mistake. For instance, when creating a FHE blockchain
+network, there is a need for one key for the whole network. Who holds the decryption key will define
+the security level, given it to one party is insecure. MPC could be used as a means to distribute the
+key to all nodes of the blockchain, thus making the blockchain network more secure. Thus, combining
+PETs could enhance security for certain applications\footnote{The blockchain is made (very) secure by FHE, but by distributing the key using MPC, the security is shifted to the
+MPC.}.
+
+\section{Thesis outline}

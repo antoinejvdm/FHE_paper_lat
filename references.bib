@@ -53,14 +53,69 @@
   note      = {International Conference on Cryptographers Track at the RSA Conference on Topics in Cryptology, CT-RSA 2018 ; Conference date: 16-04-2018 Through 20-04-2018}
 }
 
+%ENISA definition of PETs
+@misc{EDPSGlossary,
+  author       = {{European Data Protection Supervisor}},
+  title        = {Glossary},
+  howpublished = {\url{https://www.edps.europa.eu/data-protection/data-protection/glossary/p_en#pets}},
+  note         = {Accessed: 24 December 2025}
+}
+
+%Enclaves SCA
+@article{EnclavesSCA2015,
+  title      = {Controlled-{Channel} {Attacks}: {Deterministic} {Side} {Channels} for {Untrusted} {Operating} {Systems}},
+  shorttitle = {Controlled-{Channel} {Attacks}},
+  url        = {https://ieeexplore.ieee.org/document/7163052/},
+  doi        = {10.1109/SP.2015.45},
+  urldate    = {2025-04-22},
+  journal    = {2015 {IEEE} {Symposium} on {Security} and {Privacy}},
+  author     = {Xu, Yuanzhong and Cui, Weidong and Peinado, Marcus},
+  month      = may,
+  year       = {2015},
+  note       = {ISSN: 2375-1207},
+  keywords   = {Control systems, Data mining, Hardware, Monitoring, Operating systems, Resource management, SGX, side-channel attack, untrusted operating system, Virtual machine monitors, virtualization},
+  pages      = {640--656}
+}
+
+%MPC explination
+@misc{DeCoste2018,
+  title        = {Secret Sharing Explained},
+  howpublished = {\url{https://medium.com/dropoutlabs/secret-sharing-explained-acf092660d97}},
+  abstract     = {The primitive behind secure multi-party computation},
+  language     = {en},
+  urldate      = {2025-03-20},
+  journal      = {Cape Privacy (Formerly Dropout Labs)},
+  author       = {DeCoste, Ben},
+  month        = nov,
+  year         = {2018},
+  note         = {Accessed: 2025-12-24}
+}
+
+%Compiler optimizations for HE
+@article{Cowan2021,
+  address    = {Virtual Canada},
+  title      = {Porcupine: a synthesizing compiler for vectorized homomorphic encryption},
+  isbn       = {978-1-4503-8391-2},
+  shorttitle = {Porcupine},
+  doi        = {10.1145/3453483.3454050},
+  abstract   = {Homomorphic encryption (HE) is a privacy-preserving technique that enables computation directly on encrypted data. Despite its promise, HE has seen limited use due to performance overheads and compilation challenges. Recent work has made significant advances to address the performance overheads but automatic compilation of efficient HE kernels remains relatively unexplored.},
+  language   = {en},
+  journal    = {Proceedings of the 42nd {ACM} {SIGPLAN} {International} {Conference} on {Programming} {Language} {Design} and {Implementation}},
+  publisher  = {ACM},
+  author     = {Cowan Meghan and Dangwal Deeksha and Alaghi Armin and Trippel Caroline and Lee T. Vincent and Reagen Brandon},
+  month      = jun,
+  year       = {2021},
+  pages      = {375--389}
+}
+
 @misc{ilaria_chillotti_zama_tfhe_2022,
-  title   = {{TFHE} {Deep} {Dive} - {Ilaria} {Chillotti}, {FHE}.org },
-  url     = {https://www.youtube.com/watch?v=LZuEr4jpyUw},
-  urldate = {2025-11-13},
-  author  = {{Ilaria Chillotti}},
-  month   = aug,
-  year    = {2022},
-  note    = {YouTube video}
+  title        = {{TFHE} {Deep} {Dive} - {Ilaria} {Chillotti}, {FHE}.org },
+  howpublished = {\url{https://www.youtube.com/watch?v=LZuEr4jpyUw}},
+  urldate      = {2025-11-13},
+  author       = {Ilaria Chillotti},
+  month        = aug,
+  year         = {2022},
+  note         = {YouTube video, Accessed: 2025-11-13}
 }
 
 @misc{j_bouman_comparison_nodate,
@@ -340,4 +395,13 @@
   year         = {2024},
   doi          = {10.62056/a01zogy4e-},
   url          = {https://eprint.iacr.org/2024/153}
+}
+
+%Reduction from search RLWE to decision RLWE
+@misc{Hao2015RLWEreduction,
+  author       = {Hao Chen and Kristin E.  Lauter and Katherine E.  Stange},
+  title        = {Attacks on the Search-{RLWE} problem with small error},
+  howpublished = {Cryptology {ePrint} Archive, Paper 2015/971},
+  year         = {2015},
+  url          = {https://eprint.iacr.org/2015/971}
 }

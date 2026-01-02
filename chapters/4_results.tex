@@ -1,0 +1,35 @@
+\chapter{Results}
+\label{cha:results}
+
+\section{One-hot encoding}
+
+\subsection{Communication cost}
+One-hot encoding can be used to reduce the communication cost when querying one element from a database.
+The communication cost in PIRANA when querying one element is $m$ ciphertexts, where $m$ is equal to $O\!\left(\sqrt[k]{k! \, n}  + k \right)$. The communication cost in one-hot encoding is equal to one ciphertext for the rows, because there are as many rows as slots, and $t / s$ ciphertexts for the columns, since there are more columns than slots in a ciphertext. So the query communication cost, which is the amount of ciphertexts sent from client to server, is equal to:  
+\begin{equation}
+    \texttt{query communication cost} = 1 + \frac{n}{s^2}
+\end{equation}
+
+As can be deduced from the formulas above, the communication cost in one-hot encoding will be lower for small databases (small $n$). When increasing the number of slots, the communication cost will be lower in one-hot encoding up to a larger database size. For example, when taking a Hamming weight of 2 for PIRANA and the amount of slots equal to 16, one-hot encoding has a lower communication cost up to a databse size of 131583 elements. When lowering the number of slot to 1, one-hot encoding only has a lower communication cost for a database up to 3 elements. From that moment on, PIRANA will have a lower communication cost.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{r|rrrrrrr}
+        Slots $s$ & 2 & 4 & 8 & 16 & 32 & 64 & 128 \\
+        \hline
+        Elements $n$ 
+        & 46 & 574 & 8446 & 132094 & 2101246 & 33570814 & 536936446 \\
+        Query ct's
+        & 11 & 35 & 131 & 515 & 2052 & 8196 & 32772 \\
+    \end{tabular}
+    \caption{Number of elements $n$ from when PIRANA has less communication cost than one-hot encoding (results are indicated for  different amount of slots $s$ and Hamming weight $k=2$).}
+\end{table}
+
+\subsection{One-hot encoding versus GBFV}
+
+
+\section{GBFV-PIRANA versus BFV-PIRANA}
+\subsection{Large payload, $N=2^{13}$, compared to paper}
+\subsection{Large payload, compared to our implementation}
+
+\section{GBFV PIRANA, best parameters}

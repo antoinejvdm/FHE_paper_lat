@@ -25,6 +25,9 @@
 \usepackage{tikz} % To draw figures
 \usepackage{multirow} % For multirow in tables
 % \usepackage{adjustbox} % To resize tables
+\usepackage{amsthm} % For definition and theorems
+\usepackage{algorithm} % For pseudocode
+\usepackage{algpseudocode} % For pseudocode
 
 %%%%%%%
 % The lipsum package is used to generate random text.
@@ -63,11 +66,13 @@
 % Now comes the main text
 \mainmatter
 
-% \include{chapters/1_intro}
+\include{chapters/1_intro}
 \include{chapters/2_theoretical_background}
 \include{chapters/3_PIR_implementation}
-% \include{chapters/n_chapter}
-% \include{chapters/n_conclusion}
+\include{chapters/4_results}
+\include{chapters/5_discussion}
+\include{chapters/x_conclusion}
+
 
 % % If you have appendices:
 % \appendixpage*          % if wanted
