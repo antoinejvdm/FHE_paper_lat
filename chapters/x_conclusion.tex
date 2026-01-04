@@ -1,5 +1,13 @@
 \chapter{Conclusion}
 \label{cha:conclusion}
-The final chapter contains the overall conclusion. It also contains
-suggestions for future work and industrial applications.
+In this thesis, PIRANA is for a first time successfully implemented with a GBFV scheme.
+To this end, GBFV-PIRANA was implemented on top of the Fheanor library using the easyGBFV wrapper. Both single-query PIRANA variants, targeting small and large payloads, were implemented. A comprehensive testbench was developed to evaluate performance of the developed implementation for different database sizes, payload sizes, and plaintext moduli.
+
+This is of particular interest, since GBFV allows for greater flexibility in parameter selection; fewer but bigger slots are possible when compared to BFV (cf. PIRANA was implemented with BFV by Liu et al. \cite{PIRANA2023}). Also, GBFV could allow to evaluate deeper circuits or could allow to work with smaller ring dimensons, by combining the properties of BFV and CLPX (Section \ref{sec:GBFVtheor}). By decoupling the number of slots from the ring dimension and allowing larger plaintext moduli, GBFV can accommodate larger payload chunks and reduce the number of ciphertexts required for large-payload retrieval. This can lead to lower communication overhead. 
+
+The experimental results demonstrate that GBFV-PIRANA offers clear advantages over one-hot encoding in terms of communication efficiency once the database reaches a certain size threshold, even for single-query PIRANA. This threshold depends on the number of SIMD slots and the chosen constant-weight code parameters, but aligns well with theoretical expectations.
+
+Experimental results show that implementing GBFV-PIRANA is feasible, but performance lags when compared to the original PIRANA-paper implemented on a performant library. This is mainly due to the fact that Fheanor is not optimized for performance, but rather for research purposes. This opens directions for future work, such as implementing GBFV-PIRANA on a more performant library and implementing multi-query GBFV-PIRANA thereon. 
+
+This thesis showed the feasibility of implemeting PIRANA with a GBFV scheme and provided insights into its performance characteristics.
 

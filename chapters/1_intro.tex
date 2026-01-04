@@ -114,3 +114,12 @@ PETs could enhance security for certain applications\footnote{The blockchain is 
 MPC.}.
 
 \section{Thesis outline}
+This thesis aims to implement the PIRANA-protocol\footnote{The PIRANA-protocol is a private information retrieval protocol.} using a GBFV\footnote{GBFV is a FHE-scheme}scheme. 
+
+The thesis begins by presenting the theoretical background required for this work. First, the different generations of homomorphic encryption are introduced. Since the GBFV scheme relies on the hardness of the Ring Learning With Errors (RLWE) problem, cyclotomic rings, LWE, and RLWE are subsequently discussed. The GBFV scheme and its scheme functions are then described in detail. As GBFV supports single-instruction multiple-data (SIMD) operations, SIMD is also addressed.
+
+Next, private information retrieval is introduced, with a distinction between single-server and multi-server PIR schemes. In Section \ref{sec:PIRANA}, the PIRANA protocol is described for two single-query implementations: PIRANA for small payloads and PIRANA for large payloads. Finally, the Fheanor library, a Rust-based homomorphic encryption framework on which the easyGBFV implementation is built, is presented.
+
+Chapter \ref{cha:PIR_implementation} describes the implementation of GBFV-PIRANA for both single-query small and large payloads. In addition, a GBFV-based approach using one-hot encoding is introduced.
+
+The experimental results are presented and analyzed in the subsequent chapter. These results are then discussed, and the thesis concludes with a summary of the findings and conclusions drawn from this research.

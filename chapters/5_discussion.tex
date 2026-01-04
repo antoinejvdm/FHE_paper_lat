@@ -1,10 +1,38 @@
 \chapter{Discussion}
-\label{cha:Discussion}
+\label{cha:discussion}
+\section{Implementation}
+In this thesis, PIRANA is implemented with a GBFV-scheme. GBFV-PIRANA is hereby built upon the Fheanor library. Testbenches are created to measure the performance of the implementation, these testbenches measure the query generation time, server response time and decryption and recomposition time for different database sizes, element sizes, cyclotomic orders and plaintext moduli. The results of these measurements are shown in chapter \ref{cha:results} and the implementatons can be found in the thesis github.
 
-\section{Discussion of results}
-Discussion of results goes here.
-\section{Why GBFV is better than BFV}
-Discussion of why GBFV is better than BFV goes here.
+\section{GBFV-PIRANA versus one-hot encoding}
+When increasing the number of slots, the communication cost will be lower in one-hot encoding up to a larger database size. For example, when taking a Hamming weight of 2 for PIRANA and the amount of slots equal to 16, one-hot encoding has a lower communication cost up to a databse size of 131583 elements (see Table \ref{ta:wb:query_PIRANA_OH}). When lowering the number of slot to 1, one-hot encoding only has a lower communication cost for a database up to 3 elements. From that moment on, PIRANA will have a lower communication cost.
+This is due to the fact that, when the database grows, the amount of queries for one-hot encoding will grow faster when compared to PIRANA. Every time the length $m$ of the constant-weight codewords grows, it allows for more columns in the database. In PIRANA increasing $n$, the amount of elements in the database, will lead to a $k$-th square root increase in the length $m$ of the codewords, while for one-hot encoding increasing $n$ will lead to a linear increase in the length $m$ of the codewords. Therefore, there exists a point, a certain database size, from which on PIRANA will have a lower communication cost.
+
+Next to communcation cost analysis, the performance of both protocols are also compared. The results are shown in table \ref{tab:OH_PIRANA_comparison_p32} and \ref{tab:OH_PIRANA_comparison_p64}. From these results, it can be seen that GBFV-PIRANA outperforms one-hot encoding in server response time for all database sizes when using a plaintext modulus of 32 bits and for $N=2^6$. Query generation time and decryption and recomposition time are slightly worse for GBFV-PIRANA, but these times can be neglected in the total protocol time, since the server response time is much larger. When using a plaintext modulus of 64 bits and using $N=2^8$, GBFV-PIRANA outperforms one-hot encoding in server response time for database sizes larger or equal to $2^{12}$ elements. For smaller databases, one-hot encoding has a slightly better server response time. Again, query generation time and decryption and recomposition time are slightly worse for GBFV-PIRANA for small databases, better for databases larger or equal to $2^{12}$ elements, but these times can be neglected in the total protocol time.
+It can indeed be expected that the query generation time is smaller for one-hot encoding for small databases, since there are less ciphertexts in one query, the communication cost is lower (see previous part). When the database size grows, GBFV-PIRANA will have a smaller amount of ciphertexts in one query, so the query generation time will be smaller when compared to one-hot encoding for large database sizes. 
+Regarding the decryption and recomposition times, one can expect a similar behaviour. The measurements were done on elements of the same size, so with the same amount of chunks. Therefore, after the rotate-and-sum operation, both protocols will have the same amount of returned ciphertexts. So the client should take the same amount of time to decrypt these ciphertexts. In table \ref{tab:OH_PIRANA_comparison_p32} and \ref{tab:OH_PIRANA_comparison_p64} it can be seen that the decryption and recomposition times are indeed very similar for both protocols. 
+The server response time can differ between both protocols because of the different underlying operations performed. Remember, in one-hot encoding, a circuit has to created when evaluating the matrix-vector multiplication. Therefore, the first element request will create a huge server response time. In the results we omitted this first server response time, since it only occurs once. For example, for a database size of $2^{13}$, element size of 1 Kb, plaintext modulus of 64 bits, the first querying an element will take a server response time of 726.3 seconds. This while the average of the next queries is 38.2 seconds.
+One advantage of GBFV-PIRANA is that there is no circuit created, so there is no huge first server response time. 
+Note that table \ref{tab:OH_PIRANA_comparison_p32} and \ref{tab:OH_PIRANA_comparison_p64} are not to be compared, since the cyclotomic order $N$ differs. 
+
+Also, the database processing time is very high when using $N=2^{13}$, which makes testing cumbersome. For every scheme with a different amount of slots, the database has to be created and processed for different dimensions. 
+
+\section{GBFV-PIRANA parameter optimization}
+To find the optimal parameters for a GBFV-PIRANA implementation, N was set to $2^8$, the number of elements was set to $2^{12}$ and the size of one element was 512-bit. The goal is to find an optimal plaintext modulus (and so a number of slots) for this implementation. Table \ref{tab:GBFV_PIRANA_plaintext} shows that in the range of plaintext moduli from $2^{8}$ to $2^{11}$, the server response time is the lowest at $2^{10}$. This corresponds to 4 slots in the ciphertext. The query generation time and decryption and recomposition time are increasing when increasing the plaintext modulus.
+The results for plaintext moduli smaller than $2^{8}$ show anomalies. 
+One should expect that, when evaluating different plaintext moduli, an optimal plaintext modulus exists over the full range of possible plaintext moduli, which is difficult to define in the case of our results.
+
+\section{GBFV-PIRANA versus BFV-PIRANA}
+The performance of GBFV-PIRANA was evaluated and compared to BFV-PIRANA, using the same parameters as in the PIRANA-paper. The results show that the GBFV-PIRANA implementation is in all means slower than the BFV-PIRANA implementation. 
+
+But, as mentioned in the results section, this comparison is suboptimal since different hardware and libraries are used. Therefore, BFV-PIRANA was also implemented on the Fheanor library, to make a fair comparison between both implementations. The results of this comparison show that ....
+
+
+\section{Overhead large versus small payload}
 
 \section{Future work}
-Discussion of future work goes here.
+In this thesis GBFV-PIRANA was implemented for single-query and built upon the Fheanor library. Multiple further optimizatons and extensions can be made to this work.
+First of all, the implementation can be extended to multi-query PIRANA. Untill now, only single-query PIRANA is implemented. However, PIRANA supports multi-query natively. Implementing multi-query PIRANA could increase the performance and make the protocol more competitive in comparison to other PIR-protocols. 
+Next to this, to increase the performance even more, GBFV-PIRANA should be implemented on a more performant library. Fheanor is a library created for researchers, and not optimized for performance. 
+However, to implement GBFV-PIRANA on a more performant library, this library has to implement the GBFV-scheme.
+Due to the low performance of Fheanor, testing performance for different parameter sets is very time consuming for large databases or big cyclotomic orders. Therefore, implementing GBFV-PIRANA on a more performant library would also allow to test more parameter sets and find the optimal parameters for GBFV-PIRANA more easily.
+In the thesis implementation of BFV-PIRANA, the highest plaintext modulus is of size i32. This is a huge limitation and blocks comparison for big integers. Therfore, implemeting BFV with big integers would allow to compare GBFV-PIRANA and BFV-PIRANA for big integers.
