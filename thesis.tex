@@ -19,10 +19,13 @@
 \usepackage[pdfusetitle,colorlinks,plainpages=false]{hyperref}
 \usepackage{amsmath}
 \usepackage{caption}
+\usepackage{subcaption}%for 2 figures side by side
 \usepackage{amssymb} 
 \usepackage{enumitem}
 \usepackage{msc} % Message Sequence Charts to make the protocle diagrams
 \usepackage{tikz} % To draw figures
+\usepackage{pgfplots} % For plotting data
+\pgfplotsset{compat=1.18}
 \usepackage{multirow} % For multirow in tables
 % \usepackage{adjustbox} % To resize tables
 \usepackage{amsthm} % For definition and theorems
@@ -30,19 +33,15 @@
 \usepackage{algpseudocode} % For pseudocode
 
 
-%%%%%%%
-% The lipsum package is used to generate random text.
-% You never need this in a real master's thesis text!
-\IfFileExists{lipsum.sty}%
- {\usepackage{lipsum}\SetLipsumDefault{11-13}}%
- {\newcommand{\lipsum}[1][11-13]{\par And some text: lipsum ##1.\par}}
-%%%%%%%
 
 %\includeonly{chapter-n}
 \begin{document}
+% Global paragraph spacing: no indent + extra vertical space
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.8em}
 
 \begin{preface}
-  I would like to thank XXX.
+  First, I would like to express my gratitude to Dr. Ir. R. Geelen and Dr. J. Kang for their excellent supervision and for their guidance with the mathematical background. I would also like to thank Ir. J. Spiessens for creating EasyGBFV, which made working with GBFV much easier, and for his help in understanding the Fheanor library. Finally, I would like to thank KU Leuven, which introduced me to the fields of computer science and cryptography.
 \end{preface}
 
 \tableofcontents*

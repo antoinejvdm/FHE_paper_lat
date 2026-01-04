@@ -1,0 +1,50 @@
+\setmsckeyword{}
+    \setmscscale{0.8}
+    \setlength{\leftnamedist}{0cm}
+    \drawframe{no}
+    \begin{msc}{}
+        \setlength{\instdist}{2.5cm}
+        \declinst{client}{}{Client}
+        \declinst{server}{}{Server}
+
+        \action*{%
+        \begin{minipage}{5cm} \centering
+        Samples a random vector\\[2mm]
+        \begin{tabular}{r@{ }c@{ }l}
+        $v_1$ & $=$ & $[\, 0, \cdots, 1, \cdots, 0 \,]$ \\
+        $v_2$ & $=$ & $[\, 0, \cdots, 1, \cdots, 0 \,]$ \\[2mm]
+        \end{tabular}
+        $q_1 = Enc(v_1, \text{sk})$\\
+        $q_2 = Enc(v_2, \text{sk})$
+        \end{minipage}%
+        }{client}
+        \nextlevel[8]
+
+        \mess{$q_1 \text{ and } q_2$}{client}{server}
+        \nextlevel[1]
+
+        \action*{
+        \begin{minipage}{4cm}\centering 
+        \begin{tabular}{r@{ }c@{ }l}
+        $q_3$ & $=$ & $db_{matrix}\; \times_{hom}\; q_1$ \\
+        $q_4$ & $=$ & $q_3 \times_{hom} q_2$ \\
+        \end{tabular}
+        \end{minipage}
+        }{server}
+
+        \nextlevel[4]
+        \mess{Send $a_1$}{server}{client}
+
+        \nextlevel[2]
+        \action*{%
+        \begin{minipage}{4cm}\centering 
+        \begin{tabular}{r@{ }c@{ }l}
+        $v_3$ & $=$ & $Dec(q_4, \text{sk})$ \\
+         & $=$ & $[\, 0, \cdots, el, \cdots, 0 \,]$ \\
+        \end{tabular}
+        \end{minipage}%
+        }{client}
+
+        \nextlevel[3]
+    \end{msc}
+

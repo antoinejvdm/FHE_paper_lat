@@ -30,7 +30,7 @@ BFV (Brakerski-Fan-Vercauteren) is built on the RLWE problem (ring learning with
 \Phi_m(x) = \prod_{j \in \mathbb{Z}_m^\times} \bigl(x - \omega_m^j\bigr)
 \]
 
-\begin{itemize}
+\begin{itemize}[nosep]
     \item $w_m \in \mathbb{C}$ is a primitive $m$-th root of unity, where $m\ge 1$
     \item $\mathbb{Z}_m^\times$ is the unit group of integer modulo $m$.
 \end{itemize}
@@ -196,9 +196,26 @@ PIR protocols can be categorized in two groups: single-server PIR and multi-serv
 The single-server PIR is the most straightforward setting: one server holds the full dataset, and the client queries the server to get the data of interest.
 In multi-server PIR, there are multiple servers holding a copy of the full dataset, and the client queries multiple servers to obtain the data of interest. The core idea when using multi-server PIR is that, although the dataset is replicated on multiple servers, the query is split into parts. In this way, none of the servers learn which bit is requested but the requested bit can be recovered from the results of the different servers. 
 
-A multi-server PIR scheme is demonstrated in Figure \ref{fig:multiserver_pir}. Let D be the database with 4 bits $[b_1, b_2, b_3, b_4]$, and the client wants to retrieve bit \( b_3 \) privately. There are two non-colluding servers holding a copy of the database. The client will sample a random binary vector $q_1$ and will make $q_2$ by XORing $q_1$ withe a zero vector with a one at the position of the wanted element $e_3$. Subsequently both queries are sent to both servers. The servers compute $a_1$ and $a_2$, and return them to the client. Afther XORing both responses the client can retrieve $b_3$. Each server sees a random-looking query, so neither learns which index was requested as long as they do not collude.
+A multi-server PIR scheme is demonstrated in Figure \ref{fig:multi_pir}. Let D be the database with 4 bits $[b_1, b_2, b_3, b_4]$, and the client wants to retrieve bit \( b_3 \) privately. There are two non-colluding servers holding a copy of the database. The client will sample a random binary vector $q_1$ and will make $q_2$ by XORing $q_1$ withe a zero vector with a one at the position of the wanted element $e_3$. Subsequently both queries are sent to both servers. The servers compute $a_1$ and $a_2$, and return them to the client. Afther XORing both responses the client can retrieve $b_3$. Each server sees a random-looking query, so neither learns which index was requested as long as they do not collude.
 
-\input{fig/multi_server_PIR_example}
+\begin{figure}[tbp]
+    \centering
+    \begin{subfigure}[b]{0.40\textwidth}
+        % \centering
+        \scalebox{0.7}{\input{fig/single_server_PIR_example.tex}}
+        \caption{Single-server}
+        \label{fig:single_pir}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.56\textwidth}
+        \raggedright% \centering
+        \scalebox{0.62}{\input{fig/multi_server_PIR_example.tex}}
+        \caption{Multi-server}
+        \label{fig:multi_pir}
+    \end{subfigure}
+    \caption{Types of PIR schemes}
+    \label{fig:pir_comparison}
+\end{figure}
 
 Security holds as long as the servers do not collude. This assumption is difficult to achieve, because the database is usally under one authority and distributing the database on multiple servers with different authorities is mostly not feasible in practice. Therefore, single-server PIR schemes are often preferred since they rely on cryptographic hardness assumptions, but at the cost of incurring a performance overhead.  
 In this thesis, we will further focus on single-server PIR. 
@@ -249,10 +266,11 @@ The result of this multiplication gives a 3D-matrix of size $r \times t \times \
 %rotate-and-sum figuur
 \begin{figure}
     \centering
-    \input{fig/Rotate_and_sum_PIRANA.tex} 
-    \captionof{figure}{Rotate-and-sum operation}
+    \resizebox{0.9\textwidth}{!}{\input{fig/Rotate_and_sum_PIRANA.tex}}
+    \caption{Rotate-and-sum operation}
     \label{fig:rotate_and_sum_PIRANA}   
 \end{figure}
+
 
 For small database size $n$, one could pre-compute the rotations in the set-up time of the database. This will reduce the computation time when performing a query to the database. 
 

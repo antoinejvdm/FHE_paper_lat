@@ -20,9 +20,9 @@ Some utility functions are created to help with the implementation of the PIR pr
     \end{equation}
     \item \verb|calculate_cw_len(k,columns)|: The constant-weight codeword length $m$ is calculated with this function. The function takes the Hamming weight $k$ and the amount of columns in the database as input arguments. If $k$ equals 2 (default parameter), the function calculates $m$ via this formula: 
     \begin{equation}
-        \frac{m \cdot (m-1)}{2} \ge n_\text{columns}
+        \frac{m \cdot (m-1)}{2} \ge n_\text{col}
         \; \Longrightarrow\;
-        m=\left\lceil\frac{1+\sqrt{1+8\cdot n_\text{columns}}}{2}\right\rceil
+        m=\left\lceil\frac{1+\sqrt{1+8\cdot n_\text{col}}}{2}\right\rceil
     \end{equation}.
     In any other case, $m$ will be calaculated via a iterative approach. 
     It will return the minimal $m$ such that $\binom{m}{k} \geq columns$.
@@ -52,23 +52,40 @@ The server will, for each column, take the codewords of length $m$ and look at w
 
 The client will receive the ciphertext from the server and will decrypt using his secret key. Every ciphertext is decrypted and will return a vector of slot ring elements. All elements are equal to zero, except for the $i$-th element, which is equal to the desired element in the database. The client can now format this element and retrieve the desired value. 
 
-
-
 \section{GBFV-PIRANA, single-query large payload}
 In this section, the implementation of a single-query PIR protocol for large payloads using the easyGBFV library is presented. The implementation can be found in the \verb|examples\7_GBFV_PIRANA_Lpayload| folder of the thesis github. 
-The implementation is similar to the small payload implementation, with some differences. First, the database is created. The database is now a 3D-matrix of size $r \cdot t \cdot chunks$, where $r$ is equal to the number of slots in the ciphertext, $t$ is equal to the amount of elements divided by the number of slots and $chunks$ is equal to the amount of chunks needed to split one large element. Every large element in the database is split into $chunks$ chunks via base-$p$ decomposition, with $p$ the plaintext modulus. Every chunk is smaller than $p$. The query generation works in the same way as for small payloads, where a constant-weight codeword is set at the $i$-th row of the query matrix. At the server side, the implementation works in the same way as the small payload implementation. The selection matrix is created in the same way, but when multiplying the selection matrix with the database, this operation is repeated for every chunk of the database. This will result in $chunks$ ciphertexts. To reduce the number of ciphertexts sent back to the client, a rotate-and-sum operation is performed on every ciphertext. This will result in $\frac{chunks}{slots}$ ciphertexts which are sent back to the client. The client will decrypt every ciphertext and recompose the chunks into one large integer via base-$p$ recomposition. The client can now retrieve the desired element from the database.
+The implementation is similar to the small payload implementation, with some differences. First, the database is created. The database is now a 3D-matrix of size $r \cdot t \cdot chunks$, where $r$ is equal to the number of slots in the ciphertext, $t$ is equal to the amount of elements divided by the number of slots and $chunks$ is equal to the amount of chunks needed to split one large element. Every large element in the database is split into $chunks$ chunks via base-$p$ decomposition, with $p$ the plaintext modulus. Every chunk is smaller than $p$. The query generation works in the same way as for small payloads, where a constant-weight codeword is set at the $i$-th row of the query matrix. At the server side, the implementation works in the same way as the small payload implementation. The selection matrix is created in the same way, but when multiplying the selection matrix with the database, this operation is repeated for every chunk of the database. This will result in $chunks$ ciphertexts. To reduce the number of ciphertexts sent back to the client, a rotate-and-sum operation is performed on every ciphertext. This will result in $\frac{chunks}{slots}$ ciphertexts which are sent back to the client as shown in Algorithm \ref{al:rot_and_sum}. The client will decrypt every ciphertext and recompose the chunks into one large integer via base-$p$ recomposition. The client can now retrieve the desired element from the database.
 
-\textcolor{red}{pseudocode rotate and sum}
+\begin{algorithm}
+\caption{Rotate-and-sum ($chunks \leq slots$)}\label{al:rot_and_sum}
+\begin{algorithmic}[1]
+\Require Ciphertext list $ct\_elements$, number of slots $slots$
+\Ensure $return\_query$ where every slot contains one $ch$
+
+\State Initialize empty list $return\_query$
+\State $i \gets 0$
+\State $acc \gets ct\_elements[i]$
+\State $i \mathrel{+}= 1$
+\While{$i < |ct\_elements|$}
+    \State $acc \gets \text{Rotate}(acc, 1)$ \Comment {Rotate by 1 position}
+    \State $acc \gets \text{homAdd}(acc, ct\_elements[i])$
+    \State Append $acc$ to $return\_query$
+    \State $i \mathrel{+}= 1$
+\EndWhile
+
+\State \Return $return\_query$
+\end{algorithmic}
+\end{algorithm}
+
 
 
 \section{GBFV one-hot encoding}
 As shown in the PIRANA paper \cite{PIRANA2023}, PIRANA is slower when compared to most other PIR protocols when querying one element. PIRANA becomes more competititive when querying multiple elements at once. Therefore, using the PIRANA protocol to get one element is suboptimal. An alternative way to retrieve one element from a database is to use one-hot encoding. The implementation can be found in the \verb|example\6_OneHot_Lpayload|.
-Instead of sending a query matrix, as in PIRANA, with one-hot encoding only two vectors are sent. Both vectors are all-zero vectors, except at position $i$ for the first vector (row vector) and at position $j$ for the second vector (column vector). When using small elements, the database in one-hot encoding has to be structured in a 2D-matrix. The first dimension equals the number of slots, while the second dimension equals $t$, where $t = \frac{n}{s}$ with $n$ the amount of elements in the database and $s$ the number of slots in a ciphertext. Algorithm \ref{al:OH_client} shows the query generation for large or small payloads. The matrx multiplication used in \ref{al:OH_server} needs a vector of length equal to a multiple of the number of slots. Therefore, padding might be needed, when the amount of columns is not a multiple of the number of slots.
+Instead of sending a query matrix, as in PIRANA, with one-hot encoding only two vectors are sent. Both vectors are all-zero vectors, except at position $i$ for the first vector (row vector) and at position $j$ for the second vector (column vector). When using small elements, the database in one-hot encoding has to be structured in a 2D-matrix. The first dimension equals the number of slots, while the second dimension equals $t$, where $t = \frac{n}{s}$ with $n$ the amount of elements in the database and $s$ the number of slots in a ciphertext. Algorithm \ref{al:OH_client} shows the query generation for large or small payloads. The matrx multiplication used in Algorithm \ref{al:OH_server} needs a vector of length equal to a multiple of the number of slots. Therefore, padding might be needed, when the amount of columns is not a multiple of the number of slots.
 
 % one hot encoding query generation
 \begin{algorithm}
-\label{al:OH_client}
-\caption{One-hot query generation}
+\caption{One-hot query generation} \label{al:OH_client}
 \begin{algorithmic}[1] % [1] adds line numbers
 
 \State $columns \gets \frac{elements}{slots}$ 

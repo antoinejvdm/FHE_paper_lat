@@ -10,23 +10,60 @@ The communication cost in PIRANA when querying one element is $m$ ciphertexts, w
     \texttt{query communication cost} = 1 + \frac{n}{s^2}
 \end{equation}
 
-As can be deduced from the formulas above, the communication cost in one-hot encoding will be lower for small databases (small $n$). In Table \ref{ta:wb:query_PIRANA_OH} the number of elements is shown from which on PIRANA has a lower query communication cost (number of ciphertexts that constitute the query) than one-hot encoding. The results are shown for different amount of slots $s$ and a Hamming weight of $k=2$.
+As can be deduced from the formulas above, the communication cost in one-hot encoding will be lower for small databases (small $n$). In Table \ref{tab:query_PIRANA_OH} the number of elements is shown from which on PIRANA has a lower query communication cost (number of ciphertexts that constitute the query) than one-hot encoding. The results are shown for different amount of slots $s$ and a Hamming weight of $k=2$.
 
-
-
-\begin{table}[h]
-    \label{ta:wb:query_PIRANA_OH}
+\begin{figure}[h]
     \centering
-    \begin{tabular}{r|rrrrrrr}
-        Slots $s$ & 2 & 4 & 8 & 16 & 32 & 64 & 128 \\
-        \hline
-        Elements $n$ 
-        & 46 & 574 & 8446 & 132094 & 2101246 & 33570814 & 536936446 \\
-        Query ct's
-        & 11 & 35 & 131 & 515 & 2052 & 8196 & 32772 \\
-    \end{tabular}
-    \caption{Number of elements $n$ from when PIRANA has less communication cost than one-hot encoding (results are indicated for  different amount of slots $s$ and Hamming weight $k=2$).}
-\end{table}
+    \begin{tikzpicture}
+        \begin{semilogxaxis}[
+            xlabel={Number of slots $s$},
+            ylabel={Number of elements $n$},
+            xmode=log,
+            ymode=log,
+            log basis x={2},
+            log basis y={10},
+            grid=major,
+            width=0.8\textwidth,
+            height=0.5\textwidth,
+            legend pos=north west,
+            legend style={font=\small},
+            xtick={2,4,8,16,32,64,128},
+            xticklabels={2,4,8,16,32,64,128},
+            axis on top,
+        ]
+        % Fill region above line (GBFV better)
+        \fill[blue!20, opacity=0.3] 
+            (axis cs:2,46) -- (axis cs:4,574) -- (axis cs:8,8446) -- 
+            (axis cs:16,132094) -- (axis cs:32,2101246) -- 
+            (axis cs:64,33570814) -- (axis cs:128,536936446) --
+            (axis cs:128,1e9) -- (axis cs:2,1e9) -- cycle;
+        
+        % Fill region below line (One-Hot better)
+        \fill[green!20, opacity=0.3] 
+            (axis cs:2,10) -- (axis cs:128,10) -- 
+            (axis cs:128,536936446) -- (axis cs:64,33570814) --
+            (axis cs:32,2101246) -- (axis cs:16,132094) -- 
+            (axis cs:8,8446) -- (axis cs:4,574) -- (axis cs:2,46) -- cycle;
+        
+        \addplot[blue, mark=*, thick] coordinates {
+            (2, 46)
+            (4, 574)
+            (8, 8446)
+            (16, 132094)
+            (32, 2101246)
+            (64, 33570814)
+            (128, 536936446)
+        };
+        \addlegendentry{Elements $n$ threshold}
+        
+        % Add labels above and below the line 
+        \node[above=10pt, rotate=30, font=\bfseries] at (axis cs:13,132094) {GBFV};
+        \node[below=10pt, rotate=30, font=\bfseries] at (axis cs:20,132094) {One-Hot};
+        \end{semilogxaxis}
+    \end{tikzpicture}
+    \caption{Number of elements $n$ from when PIRANA has less communication cost than one-hot encoding (results are indicated for different amount of slots $s$ and Hamming weight $k=2$).}
+    \label{tab:query_PIRANA_OH}
+\end{figure}
 
 \subsection{Performance}
 In this section, one-hot encoding and PIRANA are compared, both implemented with a GBFV scheme. 
@@ -90,6 +127,24 @@ Note that for one-hot encoding, the server will perform a matrix-vector multipli
 
 The database processing times (including the server response time) for one-hot encoding and GBFV-PIRANA, for different database sizes and different plaintext moduli (so different amount of slots), are shown in Table \ref{tab:db_processing_time}. 
 
+\begin{table}[t]
+    \centering
+    \caption{Database processing times for one-hot and GBFV-PIRANA, for $N=2^8$}
+    \label{tab:db_processing_time}
+    \resizebox{0.85\textwidth}{!}{%
+    \begin{tabular}{l cccccc}
+        \toprule
+        Database size $n$ & 
+        $2^8$ & $2^9$ & $2^{10}$ & $2^{11}$ & $2^{12}$ & $2^{13}$\\
+        \midrule
+        GBFV-PIRANA (m) & 0.285 & 0.571 & 1.146 & 2.326 & 4.890 & 10.533 \\
+        One-hot (s) & 0.001 & 0.001 & 0.002 & 0.004 & 0.009 & 0.019\\
+        \bottomrule
+    \end{tabular}
+    }
+\end{table}
+
+
 \section{GBFV-PIRANA - parameter optimization}
 \label{sec:GBFVPIRbest}
 To find the optimal parameters for a GBFV-PIRANA implementation, $N$ is set to $2^8$, the number of elements is set to $2^{12}$ and the size of one element is 512-bit. The amount of slots will be determined by the plaintext modulus. This section compares slots with plaintext modulus going from $16$-bit up to $2048$-bit. Query generation time, server response time and decryption and recomposition times are shown in Table \ref{tab:GBFV_PIRANA_plaintext}. 
@@ -120,7 +175,7 @@ The PIRANA-paper by Liu et al. describes a PIR protocol based on BFV. In this th
     \centering
     \caption{Performance of GBFV-PIRANA, when using $N=2^{13}$ and payload size 20 KB)}
     \label{tab:GBFV_BFV-PIRANA_comparison}
-    \resizebox{0.70\textwidth}{!}{%
+    \resizebox{0.75\textwidth}{!}{%
     \begin{tabular}{l ccccc}
         \toprule
         \# elements $n$ 
@@ -160,8 +215,8 @@ Two comparisons are performed for plaintext sizes of 16 and 32 bits with \( N = 
     }
 \end{table}
 
-\section{Overhead large versus small payload}
-Two GBFV-PIRANA protocols are implemented in the code of this thesis. The first protocol can only take small payloads, where the payload is smaller than the plaintext modulus. The second protocol allows for handling large playloads, larger than the plaintext modulus. Here these two implementations are compared in terms of performance (query generation time, server response time and decryption and recomposition time). 
-% The difference in performance between small and large payload GBFV-PIRANA is overhead caused by the implementation of large payloads. When taking small elements, some functions are still evaluated while there is no need to (e.g. finding in how many chunkgs a payload needs to be split).
+% \section{Overhead large versus small payload}
+% Two GBFV-PIRANA protocols are implemented in the code of this thesis. The first protocol can only take small payloads, where the payload is smaller than the plaintext modulus. The second protocol allows for handling large playloads, larger than the plaintext modulus. Here these two implementations are compared in terms of performance (query generation time, server response time and decryption and recomposition time). 
+% % The difference in performance between small and large payload GBFV-PIRANA is overhead caused by the implementation of large payloads. When taking small elements, some functions are still evaluated while there is no need to (e.g. finding in how many chunkgs a payload needs to be split).
 
 
