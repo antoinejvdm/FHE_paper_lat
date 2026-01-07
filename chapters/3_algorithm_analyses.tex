@@ -1,0 +1,30 @@
+\chapter{Algorithems analyses}
+\label{cha:algorithems_analyses}
+
+\textcolor{red}{give an overview of which algorithms}
+
+\section{PIRANA with BFV}
+BFV is the original scheme used for PIRANA \cite{PIRANA2023}. First, the communication cost is analyzed using BFV, followed by an analysis of the computational cost at the server.
+
+PIRANA employs a structured database. The ideal size of this matrix is discussed after considering how the size of the database impacts the number of ciphertexts required to perform a query from the client to the server. To perform a query, the client must know the size of the database, in order to determine the number of columns and rows. To select a specific column, the client generates a codeword corresponding to the desired column index, which is mapped to a codeword with a predetermined Hamming weight \(k\). Algorithm 1 in the PIRANA paper \cite{PIRANA2023} shows how to construct these codewords. As mentioned in Section \ref{sec:PIRANA}, the codeword length \(m\) is defined by the number of columns in the database.  
+
+Once the column index is mapped to a codeword, a zero matrix of dimensions \(m \times \#\text{rows}\) is created, and the codeword is placed in the selected row. This matrix is then encrypted into ciphertexts. Each column of the selection matrix requires \(\#\text{rows} / \text{slots}\) ciphertexts, and since the selection matrix has \(m\) columns, the total communication cost from the client to the server is 
+
+\[
+\text{Communication cost} = m \cdot \frac{r}{\text{slots}} \text{ ciphertexts}.
+\]
+
+Using this information, the ideal database size can be determined to minimize the number of ciphertexts required for a query. Specifically, the codeword length (i.e., the number of columns \(m\)) should be as small as possible, and the value of \(r/\text{slots}\) should also be minimized, in order to reduce the product \(m \cdot r/\text{slots}\).  
+
+When balancing a database containing \(N\) elements without additional constraints, the ideal configuration is a square matrix, i.e., \(m = r = \sqrt{N}\). However, in PIRANA, since the number of ciphertexts sent for the columns depends on \(r/\text{slots}\), the optimal balance to minimize communication for a query differs slightly. As shown in Equation \ref{eq:database_size_optimization_querie}, where \(p\) denotes the number of slots per ciphertext, the number of rows \(r\) should be slightly larger than the number of columns \(c\) to minimize the communication cost for a query.
+
+
+\begin{equation}
+    \label{eq:database_size_optimization_querie}
+\min_{r,c}\left(\frac{r}{p}+c\right) \ \text{s.t.} \ rc \ge N
+\quad\Longrightarrow\quad
+r \approx \lfloor \sqrt{N p} \rfloor, \quad
+c \approx \left\lceil \frac{N}{r} \right\rceil, \quad (p>1)
+\end{equation}
+
+
